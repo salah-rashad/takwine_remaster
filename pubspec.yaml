@@ -1,0 +1,57 @@
+name: takwine_remaster
+description: A new Flutter project.
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+
+  # Helpers
+  provider: ^6.0.3
+  url_launcher: ^6.1.6
+  dio: ^4.0.6
+  dio_http_cache: ^0.3.0
+  open_file: ^3.2.1
+  intl: ^0.17.0
+  path_provider: ^2.0.11
+  permission_handler: ^9.2.0
+  image_picker: ^0.8.5+3
+  get_storage: ^2.0.3
+  email_validator: ^2.1.17
+  jwt_decoder: ^2.0.1
+  external_path: ^1.0.3
+
+  # UI Packages
+  shimmer: ^2.0.0
+  cached_network_image: ^3.2.2
+  auto_size_text: ^3.0.0
+  smooth_star_rating_nsafe: ^1.0.0+1
+  readmore: ^2.2.0
+  configurable_expansion_tile_null_safety: ^3.1.1
+  youtube_player_flutter: ^8.1.0
+  fluttertoast: ^8.0.9
+  font_awesome_flutter: ^10.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: GE SS Two
+      fonts:
+        - asset: assets/fonts/GESSTwoMedium-Medium.ttf
