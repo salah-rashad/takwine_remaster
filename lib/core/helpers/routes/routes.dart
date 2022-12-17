@@ -17,10 +17,13 @@ class Routes {
   static const String SINGLE_COURSE = "$COURSES/single-course";
 
   // COURSE ENROLLMENT
-  static const String ENROLLMENT_LESSONS = "enrollment/lessons";
-  static const String ENROLLMENT_MATERIALS = "enrollment/lesson/materials";
-  static const String ENROLLMENT_RESULT = "enrollment/lesson/result";
+  static const String ENROLLMENT_LESSONS = "$COURSES/enrollment/lessons";
+  static const String ENROLLMENT_CLASSROOM =
+      "$COURSES/enrollment/lesson/class-room";
+  static const String ENROLLMENT_RESULT = "$COURSES/enrollment/lesson/result";
 
   // DOCUMENTS
   static const String DOCUMENTS = "/documents";
+  static const String SEARCH_DOCUMENTS = "$DOCUMENTS/search";
+  static const String SINGLE_DOCUMENT = "$DOCUMENTS/single-document";
 }

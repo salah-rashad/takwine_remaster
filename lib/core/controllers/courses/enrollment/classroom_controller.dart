@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../../helpers/constants/api_urls.dart';
+import '../../../helpers/constants/urls.dart';
 import '../../../helpers/utils/app_snackbar.dart';
+import '../../../helpers/utils/change_notifier_helpers.dart';
 import '../../../models/course_models/lesson/lesson.dart';
 import '../../../models/course_models/material/lesson_material.dart';
-import '../../../services/api_provider.dart';
+import '../../../services/api_courses.dart';
+import '../../auth/auth_controller.dart';
 import 'exam_controller.dart';
 
-class MaterialsController extends ChangeNotifier {
+class ClassroomController extends ChangeNotifier with ChangeNotifierHelpers {
   final Lesson lesson;
-  MaterialsController(this.lesson) {
+  final BuildContext context;
+
+  ClassroomController(this.context, this.lesson) {
+    context.read<AuthController>().updateLastActivity(lesson.course);
     getMaterial();
   }
 
@@ -35,7 +41,7 @@ class MaterialsController extends ChangeNotifier {
   bool get isExam => currentIndex + 1 == totalCount;
 
   void changeIndex(int index, ExamStatus examStatus) {
-    if (index + 1 > totalCount) return;
+    if (index + 1 > totalCount || index < 0) return;
 
     if (isExam) {
       if (index + 1 < totalCount) {
@@ -51,14 +57,30 @@ class MaterialsController extends ChangeNotifier {
     currentIndex = index;
   }
 
+  void nextPage(ExamStatus examStatus) {
+    changeIndex(
+      currentIndex + 1,
+      examStatus,
+    );
+  }
+
+  void previousPage(ExamStatus examStatus) {
+    changeIndex(
+      currentIndex - 1,
+      examStatus,
+    );
+  }
+
   Future<void> getMaterial() async {
     if (isExam) return;
     material =
-        ApiUrls.COURSE_lesson_material(lesson.course!, lesson.id!, currentIndex)
-            .getCache((map) => LessonMaterial.fromMap(map));
+        ApiUrls.COURSES_lesson_material(lesson.course, lesson.id, currentIndex)
+            .getCache(LessonMaterial.fromMap);
 
-    material = await ApiProvider()
-        .courses
-        .getLessonMaterial(lesson.course!, lesson.id!, currentIndex);
+    material = await ApiCourses.getLessonMaterial(
+      lesson.course,
+      lesson.id,
+      currentIndex,
+    );
   }
 }

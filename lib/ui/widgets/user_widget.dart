@@ -6,8 +6,8 @@ import '../theme/palette.dart';
 import 'circular_bordered_image.dart';
 import 'dialogs/auth_dialog.dart';
 
-class HelloUserWidget extends StatelessWidget {
-  const HelloUserWidget({super.key});
+class UserWidget extends StatelessWidget {
+  const UserWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class HelloUserWidget extends StatelessWidget {
                   builder: (context) => const AuthDialog(),
                 ),
           child: CircularBorderedImage(
-            imageUrl: auth.user?.image,
+            imageUrl: auth.user?.imageUrl,
             spaceBetween: 2.0,
             size: 32.0,
           ),
@@ -30,7 +30,7 @@ class HelloUserWidget extends StatelessWidget {
         const SizedBox(width: 16.0),
         Expanded(
             child: Text(
-          "مرحباً ${auth.user?.firstName ?? "بك!"}",
+          "مرحباً ${auth.user?.first_name ?? "بك!"}",
           style: const TextStyle(color: Palette.WHITE, fontSize: 18.0),
         )),
       ],

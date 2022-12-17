@@ -15,6 +15,7 @@ class CourseLessonExpansionItemShimmer extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(16.0),

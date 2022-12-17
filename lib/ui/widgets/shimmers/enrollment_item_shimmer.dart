@@ -15,6 +15,7 @@ class EnrollmentItemShimmer extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 22.0),
       height: 90.0,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Palette.WHITE,
         borderRadius: BorderRadius.circular(12.0),

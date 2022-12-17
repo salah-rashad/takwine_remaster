@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/controllers/auth/auth_controller.dart';
 import '../../../../core/controllers/auth/login_controller.dart';
 import '../../../theme/palette.dart';
+import '../../../theme/themes.dart';
 import '../../../widgets/gradient_button.dart';
 
 class LoginForm extends StatelessWidget {
@@ -29,19 +30,14 @@ class LoginForm extends StatelessWidget {
                   textDirection: TextDirection.ltr,
                   style: const TextStyle(fontFamily: ""),
                   autofillHints: const [AutofillHints.email],
-                  decoration: InputDecoration(
+                  decoration: AppTheme.inputDecoration.copyWith(
                     labelText: "البريد الإلكتروني",
-                    alignLabelWithHint: true,
                     labelStyle: const TextStyle(fontFamily: "GE SS Two"),
-                    prefix: SizedBox(
-                      height: 30,
-                      width: 40,
-                      child: ctrl.isValid
-                          ? const Icon(Icons.check_circle,
-                              color: Palette.BROWN, size: 18)
-                          : const Icon(Icons.circle,
-                              color: Palette.GRAY, size: 18),
-                    ),
+                    suffixIcon: ctrl.isEmailValid
+                        ? const Icon(Icons.check_circle,
+                            color: Palette.BROWN, size: 18)
+                        : const Icon(Icons.circle,
+                            color: Palette.GRAY, size: 18),
                   ),
                 ),
                 const SizedBox(height: 16.0),
@@ -52,28 +48,23 @@ class LoginForm extends StatelessWidget {
                   obscureText: !ctrl.passwordRevealed,
                   textDirection: TextDirection.ltr,
                   autofillHints: const [AutofillHints.password],
-                  decoration: InputDecoration(
+                  decoration: AppTheme.inputDecoration.copyWith(
                     labelText: "كلمة المرور",
-                    alignLabelWithHint: true,
                     labelStyle: const TextStyle(fontFamily: "GE SS Two"),
-                    prefix: SizedBox(
-                      height: 30,
-                      width: 40,
-                      child: IconButton(
-                        onPressed: () =>
-                            ctrl.passwordRevealed = !ctrl.passwordRevealed,
-                        icon: ctrl.passwordRevealed
-                            ? const Icon(
-                                Icons.visibility_off_rounded,
-                                color: Palette.GRAY,
-                                size: 18,
-                              )
-                            : const Icon(
-                                Icons.visibility_rounded,
-                                color: Palette.GRAY,
-                                size: 18,
-                              ),
-                      ),
+                    suffixIcon: GestureDetector(
+                      onTap: () =>
+                          ctrl.passwordRevealed = !ctrl.passwordRevealed,
+                      child: ctrl.passwordRevealed
+                          ? const Icon(
+                              Icons.visibility_off_rounded,
+                              color: Palette.GRAY,
+                              size: 18,
+                            )
+                          : const Icon(
+                              Icons.visibility_rounded,
+                              color: Palette.GRAY,
+                              size: 18,
+                            ),
                     ),
                   ),
                 ),
@@ -117,7 +108,6 @@ class LoginForm extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16.0),
         ],
       ),
     );

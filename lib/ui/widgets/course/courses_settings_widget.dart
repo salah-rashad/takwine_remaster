@@ -27,6 +27,7 @@ class CoursesSettingsWidget extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       height: 80.0,
       width: size.width / 2.3,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: colors!,

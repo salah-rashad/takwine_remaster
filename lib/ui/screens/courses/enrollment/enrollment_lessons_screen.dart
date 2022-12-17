@@ -1,17 +1,21 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/controllers/courses/enrollment/enrollment_lessons_controller.dart';
+import '../../../../core/controllers/auth/auth_controller.dart';
+import '../../../../core/controllers/courses/enrollment/lessons_controller.dart';
+import '../../../../core/helpers/constants/font_awesome_icons.dart';
 import '../../../../core/helpers/extensions.dart';
 import '../../../../core/helpers/routes/routes.dart';
-import '../../../../core/helpers/utils/connectivity.dart';
+import '../../../../core/helpers/utils/helpers.dart';
 import '../../../../core/helpers/utils/hex_color.dart';
 import '../../../../core/models/course_models/enrollment/enrollment.dart';
 import '../../../../core/models/course_models/lesson/lesson.dart';
 import '../../../theme/palette.dart';
+import '../../../widgets/category_chip.dart';
 import '../../../widgets/circular_bordered_image.dart';
-import '../../../widgets/dialogs/loading_dialog.dart';
+import '../../../widgets/cover_image.dart';
 import '../../../widgets/enrollment/enrollment_lesson_item.dart';
 import '../../../widgets/shimmers/course_lesson_item_shimmer.dart';
 
@@ -22,9 +26,9 @@ class EnrollmentLessonsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => EnrollmentLessonsController(enrollment),
+      create: (context) => LessonsController(enrollment),
       builder: (context, _) {
-        var controller = context.watch<EnrollmentLessonsController>();
+        var controller = context.watch<LessonsController>();
         return Scaffold(
           backgroundColor: Palette.BACKGROUND,
           body: Column(
@@ -86,9 +90,9 @@ class EnrollmentLessonsScreen extends StatelessWidget {
                                   return EnrollmentLessonItem(
                                     lesson: lesson,
                                     onPressed: () => onLessonItemPressed(
-                                      context,
-                                      lesson,
-                                      index,
+                                      context: context,
+                                      lesson: lesson,
+                                      index: index,
                                       isEnabled: enabled,
                                       controller: controller,
                                     ),
@@ -131,18 +135,6 @@ class EnrollmentLessonsScreen extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // ClipOval(
-                //   child: Material(
-                //     color: Colors.transparent,
-                //     child: IconButton(
-                //       onPressed: () {},
-                //       icon: const Icon(Icons.notifications_none),
-                //       padding: const EdgeInsets.all(0.0),
-                //       color: Palette.WHITE,
-                //       iconSize: 18.0,
-                //     ),
-                //   ),
-                // ),
                 const Expanded(
                   child: Text(
                     "دوراتي",
@@ -172,40 +164,53 @@ class EnrollmentLessonsScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CircularBorderedImage(
-                  imageUrl: enrollment.course?.imageUrl,
-                  spaceBetween: 6.0,
-                  size: 60.0,
+                Expanded(
+                  flex: 1,
+                  child: AspectRatio(
+                    aspectRatio: 1 / 1.5,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: CoverImage(
+                        url: enrollment.course?.imageUrl,
+                        memCacheWidth: (size.width).toInt(),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   width: 32.0,
                 ),
                 Expanded(
+                  flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      AutoSizeText(
                         enrollment.course?.title ?? "",
+                        maxLines: 3,
+                        minFontSize: 14.0,
+                        maxFontSize: 22.0,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            color: Palette.WHITE, fontSize: 22.0),
+                          color: Palette.WHITE,
+                          fontSize: 22.0,
+                        ),
                       ),
                       const SizedBox(height: 4.0),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 2.0),
-                        decoration: BoxDecoration(
-                            color: HexColor(
-                                enrollment.course?.category?.color ?? ""),
-                            borderRadius: BorderRadius.circular(30.0)),
-                        child: Text(
-                          enrollment.course?.category?.title ?? "",
-                          style: const TextStyle(
-                            color: Palette.WHITE,
-                            fontSize: 10.0,
-                          ),
+                      CategoryChip(
+                        backgroundColor:
+                            HexColor(enrollment.course?.category?.color ?? ""),
+                        label: Text(
+                            (enrollment.course?.category?.title).toString()),
+                        avatar: Icon(
+                          getFontAwesomeIcon(enrollment.course?.category?.icon),
+                          color: getFontColorForBackground(HexColor(
+                              enrollment.course?.category?.color ?? "")),
+                          size: 14,
                         ),
-                      )
+                      ),
                     ],
                   ),
                 )
@@ -225,7 +230,7 @@ class EnrollmentLessonsScreen extends StatelessWidget {
             child: Text(
               enrollment.course?.description?.trimRight() ?? "",
               style: const TextStyle(fontSize: 12.0, color: Palette.WHITE),
-              textAlign: TextAlign.center,
+              // textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: 16.0),
@@ -234,25 +239,24 @@ class EnrollmentLessonsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> onLessonItemPressed(
-    BuildContext context,
-    Lesson lesson,
-    int index, {
+  Future<void> onLessonItemPressed({
+    required BuildContext context,
+    required Lesson lesson,
+    required int index,
     required bool isEnabled,
-    required EnrollmentLessonsController controller,
+    required LessonsController controller,
   }) async {
     if (isEnabled) {
       await Navigator.pushNamed(
         context,
-        Routes.ENROLLMENT_MATERIALS,
+        Routes.ENROLLMENT_CLASSROOM,
         arguments: lesson,
-      ).then((value) async {
-        if (await Connectivity.isInternetConnected()) {
-          showLoadingDialog(context);
-
-          await controller.initialize().then((value) => Navigator.pop(context));
-        }
-      });
+      ).then(
+        (_) {
+          controller.initialize();
+          context.read<AuthController>().fetchLastActivity();
+        },
+      );
     } else {
       Fluttertoast.showToast(msg: "يجب اجتياز التكوينات السابقة أولاً");
       return;

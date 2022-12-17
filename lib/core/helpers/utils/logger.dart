@@ -24,31 +24,3 @@ enum Logger {
         error: error,
       );
 }
-
-
-
-// class Logger {
-//   final Object obj;
-//   final String? heading;
-//   final dynamic data;
-
-//   final String message;
-
-//   Logger(this.obj, this.heading, this.data)
-//       : message = heading != null ? "($heading) $data" : data;
-
-//   void warning() {
-//     log(
-//       message,
-//       name: obj.runtimeType.toString(),
-//     );
-//   }
-
-//   void error() {
-//     log(
-//       "",
-//       error: message,
-//       name: obj.runtimeType.toString(),
-//     );
-//   }
-// }

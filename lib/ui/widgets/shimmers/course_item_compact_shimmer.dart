@@ -18,6 +18,7 @@ class CourseItemCompactShimmer extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 22.0),
       height: 90.0,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Palette.WHITE,
         borderRadius: BorderRadius.circular(12.0),
@@ -63,6 +64,7 @@ class CourseItemCompactShimmer extends StatelessWidget {
                   child: Container(
                     width: size.width / 4,
                     height: 12.0,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30.0),
                     ),

@@ -4,12 +4,6 @@ const String APP_NAME_EN = "Takwine Platform";
 const String STORAGE_AUTH_TOKEN = "token";
 const String STORAGE_AUTH_FULL_TOKEN = "full-token";
 
-const List<String> genders = [
-  '__',
-  'ذكر',
-  'أنثى',
-];
-
 const List<String> cities = [
   "__",
   "الدار البيضاء",
@@ -68,6 +62,7 @@ const responseMessageKeysTranslationsMap = <String, String>{
   'firstName': "الاسم الأول",
   'lastName': "الاسم الثاني",
   "email": "البريد الإلكتروني",
+  "password": "كلمة المرور",
   'gender': "الجنس",
   'birthDate': "تاريخ الميلاد",
   'image': "الصورة الشخصية",

@@ -7,6 +7,8 @@ import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 import '../../../core/controllers/auth/auth_controller.dart';
 import '../../../core/controllers/courses/single_course_controller.dart';
 import '../../../core/controllers/file_controller.dart';
+import '../../../core/helpers/constants/font_awesome_icons.dart';
+import '../../../core/helpers/extensions.dart';
 import '../../../core/helpers/routes/routes.dart';
 import '../../../core/helpers/utils/helpers.dart';
 import '../../../core/helpers/utils/hex_color.dart';
@@ -14,7 +16,9 @@ import '../../../core/models/course_models/course/course.dart';
 import '../../../core/models/course_models/enrollment/enrollment.dart';
 import '../../../core/models/course_models/lesson/lesson.dart';
 import '../../theme/palette.dart';
+import '../../widgets/category_chip.dart';
 import '../../widgets/course/course_lesson_expansion_item.dart';
+import '../../widgets/cover_image.dart';
 import '../../widgets/dialogs/auth_dialog.dart';
 import '../../widgets/shimmers/course_lesson_expansion_item_shimmer.dart';
 
@@ -23,6 +27,7 @@ class SingleCourseScreen extends StatelessWidget {
   const SingleCourseScreen({super.key, required this.course});
 
   Color get color => HexColor(course.category?.color ?? "");
+  String get fileName => "دليل دورة: ${course.title}";
 
   @override
   Widget build(BuildContext context) {
@@ -55,26 +60,11 @@ class SingleCourseScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 4.0),
-                                  Hero(
-                                    tag: "course-category-chip",
-                                    transitionOnUserGestures: true,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12.0, vertical: 4.0),
-                                      decoration: BoxDecoration(
-                                          color: color,
-                                          borderRadius:
-                                              BorderRadius.circular(30.0)),
-                                      child: Text(
-                                        (course.category?.title).toString(),
-                                        style: TextStyle(
-                                          color:
-                                              getFontColorForBackground(color),
-                                          fontSize: 12.0,
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                                  CategoryChip(
+                                    backgroundColor: color,
+                                    label: Text(
+                                        (course.category?.title).toString()),
+                                  ),
                                 ],
                               ),
                             ),
@@ -83,7 +73,8 @@ class SingleCourseScreen extends StatelessWidget {
                             ),
                             Selector<SingleCourseController, Enrollment?>(
                               selector: (p0, p1) => p1.enrollment,
-                              builder: enrollButton,
+                              builder: (context, enrollment, _) =>
+                                  enrollButton(context, enrollment),
                             ),
                           ],
                         ),
@@ -96,7 +87,7 @@ class SingleCourseScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8.0),
                             Text(
-                              convertDateTimeFormat(course.date ?? ""),
+                              formatDate(course.date ?? ""),
                               style: const TextStyle(
                                 fontSize: 12.0,
                                 color: Palette.DARKER_TEXT_COLOR,
@@ -188,80 +179,88 @@ class SingleCourseScreen extends StatelessWidget {
                         const SizedBox(height: 16.0),
                         Row(
                           children: [
-                            ChangeNotifierProvider(
-                              create: (context) => FileController(
-                                context,
-                                fileUrl: course.pdfUrl,
-                                saveName: context
-                                    .read<SingleCourseController>()
-                                    .pdfName,
-                              ),
-                              builder: (context, widget) {
-                                var file = context.watch<FileController>();
-
-                                bool urlIsNull = course.pdfUrl == null;
-                                bool done = file.status == DownloadStatus.done;
-                                bool downloading =
-                                    file.status == DownloadStatus.downloading;
-
-                                return ElevatedButton.icon(
-                                  onPressed: urlIsNull || downloading
-                                      ? null
-                                      : done
-                                          ? () => file.openFile()
-                                          : () => file.downloadFile(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: urlIsNull || downloading
-                                        ? Palette.GRAY
-                                        : Palette.YELLOW,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                  ),
-                                  label: Text(
-                                    downloading
-                                        ? "يتم التحميل (${file.progress}%)"
-                                        : "دليل الدورة",
-                                    style: const TextStyle(
-                                      color: Palette.DARKER_TEXT_COLOR,
-                                      fontSize: 12.0,
-                                    ),
-                                  ),
-                                  icon: Icon(
-                                    done
-                                        ? Icons.menu_book_rounded
-                                        : Icons.download_rounded,
-                                    size: 14.0,
-                                    textDirection: TextDirection.ltr,
-                                    color: Palette.DARKER_TEXT_COLOR,
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(width: 8.0),
-                            ElevatedButton.icon(
-                              onPressed: course.videoUrl == null
-                                  ? null
-                                  : () => launchURL(course.videoUrl!),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Palette.BLUE1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
+                            if (course.guideFile != null)
+                              ChangeNotifierProvider(
+                                create: (context) => FileController(
+                                  context,
+                                  file: course.guideFile!,
+                                  saveName: fileName,
                                 ),
+                                builder: (context, widget) {
+                                  var file = context.watch<FileController>();
+
+                                  bool urlIsNull = course.guideFile == null;
+                                  bool done =
+                                      file.status == DownloadStatus.done;
+                                  bool downloading =
+                                      file.status == DownloadStatus.downloading;
+
+                                  if (urlIsNull) {
+                                    return const SizedBox.shrink();
+                                  } else {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: ElevatedButton.icon(
+                                        onPressed: downloading
+                                            ? null
+                                            : done
+                                                ? () => file.openFile()
+                                                : () => file.downloadFile(),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              urlIsNull || downloading
+                                                  ? Palette.GRAY
+                                                  : Palette.YELLOW,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                        label: Text(
+                                          downloading
+                                              ? "يتم التحميل (${file.progress}%)"
+                                              : "دليل الدورة",
+                                          style: const TextStyle(
+                                            color: Palette.DARKER_TEXT_COLOR,
+                                            fontSize: 12.0,
+                                          ),
+                                        ),
+                                        icon: Icon(
+                                          done
+                                              ? Icons.menu_book_rounded
+                                              : Icons.download_rounded,
+                                          size: 14.0,
+                                          textDirection: TextDirection.ltr,
+                                          color: Palette.DARKER_TEXT_COLOR,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
-                              label: const Text(
-                                "مشاهدة المختصر",
-                                style: TextStyle(
+                            if (course.videoUrl != null)
+                              ElevatedButton.icon(
+                                onPressed: () => launchURL(course.videoUrl!),
+                                clipBehavior: Clip.antiAlias,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Palette.BLUE1,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                label: const Text(
+                                  "مشاهدة المختصر",
+                                  style: TextStyle(
+                                    color: Palette.WHITE,
+                                    fontSize: 12.0,
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.play_circle_fill_rounded,
+                                  size: 14.0,
                                   color: Palette.WHITE,
-                                  fontSize: 12.0,
                                 ),
                               ),
-                              icon: const Icon(
-                                Icons.play_circle_fill_rounded,
-                                size: 14.0,
-                                color: Palette.WHITE,
-                              ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 16.0),
@@ -328,69 +327,6 @@ class SingleCourseScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 32.0),
-                  /* Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "البحث في المجالات",
-                          style: TextStyle(
-                            color: Palette.DARKER_TEXT_COLOR,
-                            fontSize: 14.0,
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        FutureBuilder<List<CourseCategory>?>(
-                          future: APIService.courses.getCourseCategories(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              var categories = snapshot.data!;
-
-                              List<Widget> chips = [];
-
-                              categories.forEach(
-                                (category) => chips.add(
-                                  GestureDetector(
-                                    onTap: () => Get.toNamed(
-                                      Routes.COURSE_BY_CATEGORY,
-                                      arguments: category,
-                                    ),
-                                    child: Chip(
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      label: Text(
-                                        category.title!,
-                                        style: TextStyle(
-                                          color: Palette.WHITE,
-                                          fontSize: 12.0,
-                                        ),
-                                      ),
-                                      backgroundColor: HexColor(category.color!),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 8.0),
-                                    ),
-                                  ),
-                                ),
-                              );
-
-                              return Wrap(
-                                spacing: 8.0,
-                                runSpacing: 8.0,
-                                children: chips,
-                              );
-                            } else {
-                              return Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-                          },
-                        ),
-                        SizedBox(height: 16.0),
-                      ],
-                    ),
-                  ), */
                 ],
               ),
             ),
@@ -398,13 +334,9 @@ class SingleCourseScreen extends StatelessWidget {
         });
   }
 
-  Widget imagePlaceholder() {
-    return Container(
-      color: Palette.WHITE.withOpacity(0.7),
-    );
-  }
-
   Widget topPanel(BuildContext context) {
+    var size = context.mediaQuery.size;
+
     return AspectRatio(
       aspectRatio: 4 / 3,
       child: ClipRRect(
@@ -413,14 +345,10 @@ class SingleCourseScreen extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: course.imageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: course.imageUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => imagePlaceholder(),
-                      errorWidget: (context, url, error) => imagePlaceholder(),
-                    )
-                  : imagePlaceholder(),
+              child: CoverImage(
+                url: course.imageUrl,
+                memCacheWidth: (size.width * 2).toInt(),
+              ),
             ),
             Align(
               alignment: Alignment.topCenter,
@@ -451,20 +379,27 @@ class SingleCourseScreen extends StatelessWidget {
                   const SizedBox(height: 16.0),
                   Row(
                     children: [
-                      TextButton.icon(
-                        onPressed: () {},
-                        label: const Text("حفظ"),
-                        icon: const Icon(
-                          Icons.bookmark_border_rounded,
-                          textDirection: TextDirection.ltr,
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Palette.WHITE,
-                        ),
-                        // color: Palette.WHITE,
-                      ),
-                      Expanded(
-                        child: Container(),
+                      Consumer<SingleCourseController>(
+                          builder: (context, controller, _) {
+                        return TextButton.icon(
+                          onPressed: onBookmarkPressed(context, controller),
+                          label: Text(
+                            controller.isBookmarked ? "تم الحفظ" : "حفظ",
+                          ),
+                          icon: Icon(
+                            controller.isBookmarked
+                                ? Icons.bookmark_added_rounded
+                                : Icons.bookmark_add_outlined,
+                            textDirection: TextDirection.ltr,
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Palette.WHITE,
+                          ),
+                          // color: Palette.WHITE,
+                        );
+                      }),
+                      const Expanded(
+                        child: SizedBox(),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
@@ -480,24 +415,19 @@ class SingleCourseScreen extends StatelessWidget {
                     alignment: Alignment.bottomRight,
                     child: Material(
                       color: HexColor(course.category?.color ?? ""),
+                      clipBehavior: Clip.antiAlias,
                       borderRadius: BorderRadius.circular(30.0),
-                      child: InkWell(
-                        onTap: () {},
-                        borderRadius: BorderRadius.circular(30.0),
-                        child: const SizedBox(
-                          height: 45.0,
-                          width: 45.0,
-                          child: Center(
-                            child: SizedBox(
-                              height: 22.0,
-                              width: 22.0,
-                              // child: SvgPicture.network(
-                              //   ApiURLs.HOST_URL +
-                              //       "/assets/images/" +
-                              //       (course.category?.color ??
-                              //           "") +
-                              //       ".svg",
-                              // ),
+                      child: SizedBox(
+                        height: 45.0,
+                        width: 45.0,
+                        child: Center(
+                          child: SizedBox(
+                            height: 22.0,
+                            width: 22.0,
+                            child: Icon(
+                              getFontAwesomeIcon(course.category?.icon),
+                              color: getFontColorForBackground(color),
+                              size: 18.0,
                             ),
                           ),
                         ),
@@ -513,58 +443,60 @@ class SingleCourseScreen extends StatelessWidget {
     );
   }
 
+  VoidCallback? onBookmarkPressed(
+      BuildContext context, SingleCourseController controller) {
+    var auth = context.watch<AuthController>();
+    if (auth.isLoggedIn) {
+      if (controller.bookmark == null) {
+        return null;
+      } else {
+        return controller.toggleBookmark;
+      }
+    } else {
+      return () {
+        showDialog<bool>(
+          context: context,
+          builder: (context) => const AuthDialog(),
+        ).then((value) => controller.initialize());
+      };
+    }
+  }
+
   Widget enrollButton(
     BuildContext context,
     Enrollment? enrollment,
-    Widget? widget,
   ) {
     var auth = context.watch<AuthController>();
     var controller = context.read<SingleCourseController>();
 
-    String label;
-    IconData icon;
-    String hint;
-    Color color;
+    String label = "سجّل بالدورة";
+    String hint = "رسوم الدورة: مجانًا";
+    IconData icon = Icons.add_rounded;
+    Color color = Palette.YELLOW;
     VoidCallback? onPressed;
 
     if (!auth.isLoggedIn) {
-      label = "سجّل بالدورة";
-      hint = "رسوم الدورة: مجانًا";
-      icon = Icons.add_rounded;
-      color = Palette.YELLOW;
-      onPressed = () => showDialog<bool>(
-            context: context,
-            builder: (context) => const AuthDialog(),
-          ).then((value) => controller.initEnrollment());
+      onPressed = () {
+        showDialog<bool>(
+          context: context,
+          builder: (context) => const AuthDialog(),
+        ).then((value) => controller.initialize());
+      };
     } else {
-      if (enrollment != null) {
-        if (enrollment.currentLesson != null) {
-          label = "أكمل الدورة";
-          hint = "${enrollment.progress}% مكتمل";
-          icon = Icons.play_arrow_rounded;
-          color = Palette.BLUE1;
-          onPressed = () => Navigator.pushNamed(
-                context,
-                Routes.ENROLLMENT_LESSONS,
-                arguments: enrollment,
-              );
-        } else {
-          label = "بدأ الدورة";
-          hint = "تم تسجيلك بالدورة";
-          icon = Icons.play_arrow_rounded;
-          color = Palette.BLUE1;
-          onPressed = () => Navigator.pushNamed(
-                context,
-                Routes.ENROLLMENT_LESSONS,
-                arguments: enrollment,
-              );
-        }
+      if (enrollment == null) {
+        onPressed = () => controller.enroll();
       } else {
-        label = "سجّل بالدورة";
-        hint = "رسوم الدورة: مجانًا";
-        icon = Icons.add_rounded;
-        color = Palette.YELLOW;
-        onPressed = context.read<SingleCourseController>().enroll;
+        label = "فتح الدورة";
+        hint = "${enrollment.progress}% مكتمل";
+        icon = Icons.play_arrow_rounded;
+        color = Palette.BLUE2;
+        onPressed = () {
+          Navigator.pushNamed(
+            context,
+            Routes.ENROLLMENT_LESSONS,
+            arguments: enrollment,
+          );
+        };
       }
     }
 
@@ -572,6 +504,7 @@ class SingleCourseScreen extends StatelessWidget {
       children: [
         ElevatedButton.icon(
           onPressed: onPressed,
+          clipBehavior: Clip.antiAlias,
           style: ElevatedButton.styleFrom(
             backgroundColor: color,
             shape: RoundedRectangleBorder(

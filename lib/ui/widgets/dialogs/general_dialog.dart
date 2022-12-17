@@ -7,7 +7,7 @@ class GeneralDialog extends StatelessWidget {
   final String? title;
   final String? content;
   final String? confirmText;
-  final String? cancelText;
+  final String? declineText;
   final VoidCallback? onConfirm;
   final VoidCallback? onDecline;
   final Color? confirmColor;
@@ -18,7 +18,7 @@ class GeneralDialog extends StatelessWidget {
     this.title,
     this.content,
     this.confirmText,
-    this.cancelText,
+    this.declineText,
     this.onConfirm,
     this.onDecline,
     this.confirmColor,
@@ -29,6 +29,7 @@ class GeneralDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(title ?? "تحذير"),
       content: Text(content ?? ""),
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       actionsAlignment: MainAxisAlignment.spaceEvenly,
       actions: [
@@ -47,7 +48,7 @@ class GeneralDialog extends StatelessWidget {
             onDecline?.call();
             Navigator.pop(context, false);
           },
-          child: Text(cancelText ?? "إلغاء"),
+          child: Text(declineText ?? "إلغاء"),
         ),
       ],
     );

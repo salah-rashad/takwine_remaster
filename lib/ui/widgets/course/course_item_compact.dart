@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 
+import '../../../core/helpers/constants/font_awesome_icons.dart';
 import '../../../core/helpers/routes/routes.dart';
 import '../../../core/helpers/utils/helpers.dart';
 import '../../../core/helpers/utils/hex_color.dart';
@@ -39,16 +40,14 @@ class CourseItemCompact extends StatelessWidget {
                   child: AspectRatio(
                     aspectRatio: 1,
                     child: Container(
-                      padding: const EdgeInsets.all(16.0),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         color: color,
                         borderRadius: BorderRadius.circular(12.0),
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.school_rounded,
-                          color: getFontColorForBackground(color),
-                        ),
+                      child: Icon(
+                        getFontAwesomeIcon(course.category?.icon),
+                        color: getFontColorForBackground(color),
                       ),
                     ),
                   ),

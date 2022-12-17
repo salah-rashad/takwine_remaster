@@ -48,8 +48,12 @@ class Enrollment {
   factory Enrollment.fromMap(Map<String, dynamic> map) {
     return Enrollment(
       id: map['id'] != null ? map['id'] as int : null,
-      course: map['course'] != null ? Course.fromMap(map['course'] as Map<String,dynamic>) : null,
-      currentLesson: map['currentLesson'] != null ? Lesson.fromMap(map['currentLesson'] as Map<String,dynamic>) : null,
+      course: map['course'] != null
+          ? Course.fromMap(map['course'] as Map<String, dynamic>)
+          : null,
+      currentLesson: map['currentLesson'] != null
+          ? Lesson.fromMap(map['currentLesson'] as Map<String, dynamic>)
+          : null,
       progress: map['progress'] != null ? map['progress'] as double : null,
       isComplete: map['isComplete'] != null ? map['isComplete'] as bool : null,
     );
@@ -68,21 +72,20 @@ class Enrollment {
   @override
   bool operator ==(covariant Enrollment other) {
     if (identical(this, other)) return true;
-  
-    return 
-      other.id == id &&
-      other.course == course &&
-      other.currentLesson == currentLesson &&
-      other.progress == progress &&
-      other.isComplete == isComplete;
+
+    return other.id == id &&
+        other.course == course &&
+        other.currentLesson == currentLesson &&
+        other.progress == progress &&
+        other.isComplete == isComplete;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      course.hashCode ^
-      currentLesson.hashCode ^
-      progress.hashCode ^
-      isComplete.hashCode;
+        course.hashCode ^
+        currentLesson.hashCode ^
+        progress.hashCode ^
+        isComplete.hashCode;
   }
 }

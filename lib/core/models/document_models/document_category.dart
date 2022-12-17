@@ -7,6 +7,7 @@ class DocumentCategory {
   String? description;
   String? color;
   String? icon;
+
   
   DocumentCategory({
     this.id,
@@ -46,8 +47,7 @@ class DocumentCategory {
     return DocumentCategory(
       id: map['id'] != null ? map['id'] as int : null,
       title: map['title'] != null ? map['title'] as String : null,
-      description:
-          map['description'] != null ? map['description'] as String : null,
+      description: map['description'] != null ? map['description'] as String : null,
       color: map['color'] != null ? map['color'] as String : null,
       icon: map['icon'] != null ? map['icon'] as String : null,
     );
@@ -55,8 +55,7 @@ class DocumentCategory {
 
   String toJson() => json.encode(toMap());
 
-  factory DocumentCategory.fromJson(String source) =>
-      DocumentCategory.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory DocumentCategory.fromJson(String source) => DocumentCategory.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -66,20 +65,21 @@ class DocumentCategory {
   @override
   bool operator ==(covariant DocumentCategory other) {
     if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.title == title &&
-        other.description == description &&
-        other.color == color &&
-        other.icon == icon;
+  
+    return 
+      other.id == id &&
+      other.title == title &&
+      other.description == description &&
+      other.color == color &&
+      other.icon == icon;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-        title.hashCode ^
-        description.hashCode ^
-        color.hashCode ^
-        icon.hashCode;
+      title.hashCode ^
+      description.hashCode ^
+      color.hashCode ^
+      icon.hashCode;
   }
 }

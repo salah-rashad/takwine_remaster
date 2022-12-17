@@ -73,7 +73,7 @@ class CoursesSearchScreen extends StatelessWidget {
                     SizedBox(
                       height: 38.0,
                       child: TextField(
-                        controller: controller.searchTextCtrl,
+                        controller: controller.textFieldController,
                         // textAlign: TextAlign.right,
                         textDirection: TextDirection.rtl,
                         style: const TextStyle(
@@ -81,11 +81,12 @@ class CoursesSearchScreen extends StatelessWidget {
                           fontSize: 12.0,
                         ),
                         onEditingComplete: () {
-                          if (controller.searchCtrlText.trim().isNotEmpty) {
+                          if (controller.searchText.trim().isNotEmpty) {
                             controller.updateSearch();
                           }
                         },
                         textInputAction: TextInputAction.search,
+                        clipBehavior: Clip.antiAlias,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,

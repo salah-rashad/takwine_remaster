@@ -20,6 +20,7 @@ class FileItemShimmer extends StatelessWidget {
             height: 45.0,
             width: 45.0,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: color.withOpacity(0.24),
               borderRadius: BorderRadius.circular(8.0),

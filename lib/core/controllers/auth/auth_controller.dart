@@ -5,21 +5,27 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import '../../../ui/widgets/dialogs/general_dialog.dart';
 import '../../helpers/enums/auth_status_enum.dart';
 import '../../helpers/utils/cache_manager.dart';
-import '../../helpers/utils/change_notifier_state_logger.dart';
+import '../../helpers/utils/change_notifier_helpers.dart';
 import '../../models/course_models/enrollment/enrollment.dart';
 import '../../models/user_models/user.dart';
-import '../../services/api_provider.dart';
+import '../../services/api_account.dart';
+import '../../services/api_auth.dart';
 
-class AuthController extends ChangeNotifier with ChangeNotifierStateLogger {
+class AuthController extends ChangeNotifier with ChangeNotifierHelpers {
   AuthController() {
     initialize();
   }
 
   User? user;
-  Enrollment? lastActivity;
+
+  Enrollment? _lastActivity;
+  Enrollment? get lastActivity => _lastActivity;
+  set lastActivity(Enrollment? value) {
+    _lastActivity = value;
+    notifyListeners();
+  }
 
   AuthStatus _status = AuthStatus.LOGGED_OUT;
-
   AuthStatus get status => _status;
   set status(AuthStatus value) {
     _status = value;
@@ -33,7 +39,10 @@ class AuthController extends ChangeNotifier with ChangeNotifierStateLogger {
     if (fullToken != null) {
       try {
         bool isTokenExpired = JwtDecoder.isExpired(fullToken);
-        if (!isTokenExpired) status = AuthStatus.LOGGED_IN;
+        if (!isTokenExpired) {
+          status = AuthStatus.LOGGED_IN;
+          fetchLastActivity();
+        }
       } catch (e) {
         if (kDebugMode) {
           print("Error token: $fullToken");
@@ -42,11 +51,20 @@ class AuthController extends ChangeNotifier with ChangeNotifierStateLogger {
       }
     }
 
-    var user = await ApiProvider().account.getProfile();
+    var user = await ApiAccount.getProfile();
 
     if (user != null) {
       status = AuthStatus.LOGGED_IN;
+      fetchLastActivity();
     }
+  }
+
+  Future<void> updateLastActivity(int? courseId) async {
+    lastActivity = await ApiAccount.updateLastActivity(courseId);
+  }
+
+  Future<void> fetchLastActivity() async {
+    lastActivity = await ApiAccount.getLastActivity();
   }
 
   Future<bool?> signOut(BuildContext context, {bool forced = false}) async {
@@ -64,9 +82,11 @@ class AuthController extends ChangeNotifier with ChangeNotifierStateLogger {
       );
     }
 
-    var result = await ApiProvider().auth.signOut();
+    var result = await ApiAuth.signOut();
     if (result) {
       status = AuthStatus.LOGGED_OUT;
+      user = null;
+      lastActivity = null;
       return true;
     } else {
       return false;

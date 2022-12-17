@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
 import 'go.dart';
 
 class AppSnackbar extends SnackBar {
@@ -9,121 +10,109 @@ class AppSnackbar extends SnackBar {
   final String? message;
   final IconData? icon;
   final Color? color;
-  final Widget? custom;
+  final bool _custom;
 
   //~   Success
-  AppSnackbar.success(/* this.context, */ {
+  AppSnackbar.success({
     super.key,
     required this.message,
     super.action,
     this.icon = Icons.done_rounded,
   })  : color = Colors.green,
-        custom = null,
-        super(
-          content: const SizedBox.shrink(),
-        ) {
+        _custom = false,
+        super(content: const SizedBox.shrink()) {
     _show();
   }
 
   //~   Error
-  AppSnackbar.error(/* this.context, */ {
+  AppSnackbar.error({
     super.key,
     required this.message,
     super.action,
     this.icon = Icons.error_rounded,
   })  : color = Colors.red,
-        custom = null,
-        super(
-          content: const SizedBox.shrink(),
-        ) {
+        _custom = false,
+        super(content: const SizedBox.shrink()) {
     _show();
   }
 
   //~   Warning
-  AppSnackbar.warning(/* this.context, */ {
+  AppSnackbar.warning({
     super.key,
     required this.message,
     super.action,
     this.icon = Icons.warning_rounded,
   })  : color = Colors.amber,
-        custom = null,
-        super(
-          content: const SizedBox.shrink(),
-        ) {
+        _custom = false,
+        super(content: const SizedBox.shrink()) {
     _show();
   }
 
   //~   Info
-  AppSnackbar.info(/* this.context, */ {
+  AppSnackbar.info({
     super.key,
     required this.message,
     super.action,
     this.icon = Icons.info_rounded,
   })  : color = Colors.white,
-        custom = null,
-        super(
-          content: const SizedBox.shrink(),
-        ) {
+        _custom = false,
+        super(content: const SizedBox.shrink()) {
     _show();
   }
 
   //~   No Internet
-  AppSnackbar.noInternet(/* this.context, */ {
+  AppSnackbar.noInternet({
     super.key,
     super.action,
   })  : color = Colors.red,
         message = "لا يوجد اتصال بالانترنت.",
         icon = Icons.wifi_off_rounded,
-        custom = null,
-        super(
-          content: const SizedBox.shrink(),
-        ) {
+        _custom = false,
+        super(content: const SizedBox.shrink()) {
     _show();
   }
 
   //~   Custom
-  AppSnackbar.custom(
-    /* this.context, */
-    this.custom, {
+  AppSnackbar.custom({
+    required super.content,
     super.key,
     super.action,
   })  : color = null,
         message = null,
         icon = null,
-        super(
-          content: const SizedBox.shrink(),
-        ) {
+        _custom = true,
+        super() {
     _show();
   }
 
   @override
-  Widget get content =>
-      custom ??
-      Row(
-        children: [
-          Icon(
-            icon,
-            color: color,
-          ),
-          const SizedBox(width: 16.0),
-          Flexible(
-            fit: FlexFit.tight,
-            child: Text(
-              message ?? "",
-              style: TextStyle(
-                color: color,
+  Widget get content => _custom
+      ? super.content
+      : Row(
+          children: [
+            Icon(
+              icon,
+              color: color,
+            ),
+            const SizedBox(width: 16.0),
+            Flexible(
+              fit: FlexFit.tight,
+              child: Text(
+                message ?? "",
+                style: TextStyle(
+                  color: color,
+                ),
               ),
             ),
-          ),
-          // const SizedBox(width: 16.0),
-          // IconButton(
-          //   onPressed: () {
-          //     ScaffoldMessenger.of(context).removeCurrentSnackBar();
-          //   },
-          //   icon: const Icon(Icons.close_rounded),
-          // ),
-        ],
-      );
+            // const SizedBox(width: 16.0),
+            // IconButton(
+            //   onPressed: () {
+            //     ScaffoldMessenger.of(context).removeCurrentSnackBar();
+            //   },
+            //   icon: const Icon(Icons.close_rounded),
+            // ),
+          ],
+        );
 
   @override
   DismissDirection get dismissDirection => DismissDirection.horizontal;
@@ -135,15 +124,7 @@ class AppSnackbar extends SnackBar {
   Duration get duration => calculateReadingTime();
 
   void _show() {
-    try {
-      var context = Go().context;
-      if (context != null) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(this);
-      }
-    } catch (e) {
-      rethrow;
-    }
+    Go().showSnackbar(this);
   }
 
   Duration calculateReadingTime() {

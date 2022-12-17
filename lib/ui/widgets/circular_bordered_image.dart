@@ -1,6 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
 import '../theme/palette.dart';
+import 'cover_image.dart';
 
 class CircularBorderedImage extends StatelessWidget {
   final String? imageUrl;
@@ -25,18 +26,15 @@ class CircularBorderedImage extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.all(spaceBetween),
         child: ClipOval(
-          child: imageUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: imageUrl!,
-                  height: size,
-                  width: size,
-                  memCacheWidth: (size * 1.5).toInt(),
-                  memCacheHeight: (size * 1.5).toInt(),
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => placeholderImage(),
-                  errorWidget: (context, url, error) => placeholderImage(),
-                )
-              : placeholderImage(),
+          child: CoverImage(
+            url: imageUrl,
+            height: size,
+            width: size,
+            memCacheWidth: (size * 1.5).toInt(),
+            memCacheHeight: (size * 1.5).toInt(),
+            fit: BoxFit.cover,
+            placeholder: (context, url) => placeholderImage(),
+          ),
         ),
       ),
     );

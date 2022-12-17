@@ -48,7 +48,9 @@ class _AppRootState extends State<AppRoot> {
                 alignment: Alignment.topCenter,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      vertical: 100.0, horizontal: 32.0),
+                    vertical: 100.0,
+                    horizontal: 32.0,
+                  ),
                   alignment: Alignment.topCenter,
                   child: Image.asset(
                     "assets/images/floating_illustrations.png",

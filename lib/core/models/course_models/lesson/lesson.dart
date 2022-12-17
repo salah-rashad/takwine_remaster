@@ -16,8 +16,9 @@ class Lesson {
   int? ordering;
   int? days;
   int? totalMaterialsCount;
-  LessonStatus status = LessonStatus.NONE;
+  bool? isComplete;
   double? result;
+  LessonStatus status = LessonStatus.NONE;
 
   Lesson({
     this.id,
@@ -27,6 +28,8 @@ class Lesson {
     this.ordering,
     this.days,
     this.totalMaterialsCount,
+    this.isComplete,
+    this.result,
   });
 
   Lesson copyWith({
@@ -37,6 +40,8 @@ class Lesson {
     int? ordering,
     int? days,
     int? totalMaterialsCount,
+    bool? isComplete,
+    double? result,
   }) {
     return Lesson(
       id: id ?? this.id,
@@ -46,6 +51,8 @@ class Lesson {
       ordering: ordering ?? this.ordering,
       days: days ?? this.days,
       totalMaterialsCount: totalMaterialsCount ?? this.totalMaterialsCount,
+      isComplete: isComplete ?? this.isComplete,
+      result: result ?? this.result,
     );
   }
 
@@ -58,6 +65,8 @@ class Lesson {
       'ordering': ordering,
       'days': days,
       'totalMaterialsCount': totalMaterialsCount,
+      'isComplete': isComplete,
+      'result': result,
     };
   }
 
@@ -73,6 +82,8 @@ class Lesson {
       totalMaterialsCount: map['totalMaterialsCount'] != null
           ? map['totalMaterialsCount'] as int
           : null,
+      isComplete: map['isComplete'] != null ? map['isComplete'] as bool : null,
+      result: map['result'] != null ? map['result'] as double : null,
     );
   }
 
@@ -83,7 +94,7 @@ class Lesson {
 
   @override
   String toString() {
-    return 'Lesson(id: $id, course: $course, title: $title, description: $description, ordering: $ordering, days: $days, totalMaterialsCount: $totalMaterialsCount)';
+    return 'Lesson(id: $id, course: $course, title: $title, description: $description, ordering: $ordering, days: $days, totalMaterialsCount: $totalMaterialsCount, isComplete: $isComplete, result: $result)';
   }
 
   @override
@@ -96,7 +107,9 @@ class Lesson {
         other.description == description &&
         other.ordering == ordering &&
         other.days == days &&
-        other.totalMaterialsCount == totalMaterialsCount;
+        other.totalMaterialsCount == totalMaterialsCount &&
+        other.isComplete == isComplete &&
+        other.result == result;
   }
 
   @override
@@ -107,6 +120,8 @@ class Lesson {
         description.hashCode ^
         ordering.hashCode ^
         days.hashCode ^
-        totalMaterialsCount.hashCode;
+        totalMaterialsCount.hashCode ^
+        isComplete.hashCode ^
+        result.hashCode;
   }
 }

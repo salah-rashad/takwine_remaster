@@ -2,18 +2,26 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
-import '../helpers/constants/api_urls.dart';
+import '../helpers/constants/urls.dart';
 import '../models/user_models/user.dart';
 import 'api_provider.dart';
 
 class ApiAuth {
-  Future<Response?> loginUser(String email, String password) async {
+  ApiAuth._();
+  static final ApiAuth _instance = ApiAuth._();
+  factory ApiAuth() {
+    return _instance;
+  }
+
+  static ApiProvider provider = ApiProvider();
+
+  static Future<Response?> loginUser(String email, String password) async {
     try {
-      final url = ApiUrls.LOGIN.url;
+      final url = ApiUrls.AUTH_LOGIN.url;
 
       /// 200: user logged in successfully, returns a cookie with the token.
       /// 400: error "message".
-      final response = await ApiProvider().POST(
+      final response = await provider.POST(
         url,
         data: <String, dynamic>{
           "email": email,
@@ -27,9 +35,9 @@ class ApiAuth {
     }
   }
 
-  Future<bool> createUser(User user, String password) async {
+  static Future<bool> createUser(User user, String password) async {
     try {
-      final url = ApiUrls.REGISTER.url;
+      final url = ApiUrls.AUTH_REGISTER.url;
 
       var data = {
         ...user.toMap(),
@@ -38,7 +46,7 @@ class ApiAuth {
 
       /// 201: User created successfully, returns user data.
       /// 400: error "message".
-      final response = await ApiProvider().POST(
+      final response = await provider.POST(
         url,
         data: data,
       );
@@ -52,14 +60,12 @@ class ApiAuth {
     }
   }
 
-  
-
-  Future<bool> signOut() async {
+  static Future<bool> signOut() async {
     try {
-      String url = ApiUrls.LOGOUT.url;
+      String url = ApiUrls.AUTH_LOGOUT.url;
 
       // 200: logged out successfully.
-      var response = await ApiProvider().POST(url);
+      var response = await provider.POST(url);
 
       if (response != null) {
         if (response.statusCode == HttpStatus.ok) {

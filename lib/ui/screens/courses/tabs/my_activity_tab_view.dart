@@ -7,14 +7,14 @@ import '../../../../core/helpers/routes/routes.dart';
 import '../../../../core/models/course_models/enrollment/enrollment.dart';
 import '../../../../core/models/user_models/user_statements.dart';
 import '../../../theme/palette.dart';
-import '../../../widgets/dialogs/celebration_dialog.dart';
 import '../../../widgets/enrollment/enrollment_item.dart';
-import '../../../widgets/hello_user_widget.dart';
+import '../../../widgets/user_widget.dart';
 import '../../../widgets/login_required_widget.dart';
 import '../../../widgets/shimmers/enrollment_item_shimmer.dart';
 
 class MyActivityTabView extends StatelessWidget {
-  const MyActivityTabView({super.key});
+  final List<Color> colors;
+  const MyActivityTabView(this.colors, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +24,13 @@ class MyActivityTabView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: Palette.coursesMyActivityTabColors,
+              colors: colors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomRight: Radius.circular(30.0),
             ),
           ),
@@ -42,7 +42,7 @@ class MyActivityTabView extends StatelessWidget {
                 // represents the status bar height
                 height: MediaQuery.of(context).padding.top,
               ),
-              const HelloUserWidget(),
+              const UserWidget(),
               const SizedBox(height: 22.0),
               Row(
                 mainAxisSize: MainAxisSize.max,
@@ -57,10 +57,6 @@ class MyActivityTabView extends StatelessWidget {
                           style:
                               TextStyle(color: Palette.WHITE, fontSize: 18.0),
                         ),
-                        // Text(
-                        //   "لقد وصلت هذا الأسبوع إلى 80% من هدفك",
-                        //   style: TextStyle(color: Palette.WHITE, fontSize: 14.0),
-                        // ),
                       ],
                     ),
                   ),
@@ -83,7 +79,8 @@ class MyActivityTabView extends StatelessWidget {
             heightFactor: 0.0,
             child: Card(
               margin: const EdgeInsets.symmetric(horizontal: 16.0),
-              elevation: 0.0,
+              elevation: 10.0,
+              clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
               ),
@@ -260,22 +257,16 @@ class MyActivityTabView extends StatelessWidget {
     BuildContext context,
     Enrollment enrollment,
   ) async {
-    var celebrate = await Navigator.pushNamed(
+    await Navigator.pushNamed(
       context,
       Routes.ENROLLMENT_LESSONS,
       arguments: enrollment,
     ).then(
       (value) {
-        context.read<CoursesController>().initActivityTab();
+        context.read<CoursesController>().initActivityTab(force: true);
+        context.read<CoursesController>().initCertificatesTab(force: true);
         return value;
       },
     );
-
-    if (celebrate == true) {
-      showDialog(
-        context: context,
-        builder: (context) => const CelebrationDialog(),
-      );
-    }
   }
 }

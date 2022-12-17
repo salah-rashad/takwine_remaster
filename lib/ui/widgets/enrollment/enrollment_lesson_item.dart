@@ -23,7 +23,7 @@ class EnrollmentLessonItem extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(2.0),
+            borderRadius: BorderRadius.circular(4.0),
             gradient: LinearGradient(
               colors: lesson.status == LessonStatus.Complete
                   ? const [Color(0xFFFF5B7F), Color(0xFFFC9970)]
@@ -73,15 +73,6 @@ class EnrollmentLessonItem extends StatelessWidget {
                         children: [
                           Text(
                             "التكوين ${(lesson.ordering ?? 0).toStringFormatted("00")}",
-                            style: TextStyle(
-                                fontSize: 16.0,
-                                color: lesson.status == LessonStatus.Complete
-                                    ? Palette.WHITE
-                                    : const Color(0xFF3A4C6E)),
-                          ),
-                          Text(
-                            lesson.title ?? "",
-                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 10.0,
@@ -89,6 +80,16 @@ class EnrollmentLessonItem extends StatelessWidget {
                                   ? Palette.WHITE
                                   : const Color(0xFF3A4C6E),
                             ),
+                          ),
+                          Text(
+                            lesson.title ?? "",
+                            // maxLines: 1,
+                            // overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14.0,
+                                color: lesson.status == LessonStatus.Complete
+                                    ? Palette.WHITE
+                                    : const Color(0xFF3A4C6E)),
                           ),
                         ],
                       ),

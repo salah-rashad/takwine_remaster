@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 import 'palette.dart';
 
 class AppTheme {
-  BuildContext context;
-
-  AppTheme(this.context);
-
-  TextTheme get textTheme => Theme.of(context).textTheme;
-
   static const String FONT_FAMILY = "GE SS Two";
 
   static ThemeData get _shared => ThemeData(
@@ -30,6 +24,22 @@ class AppTheme {
           surface: Palette.GRAY,
           onSurface: Palette.NEARLY_BLACK1,
         ),
+      );
+
+  static InputDecoration get inputDecoration => InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        alignLabelWithHint: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(
+            color: Palette.GRAY,
+          ),
+        ),
+        isDense: true,
       );
 
   //~ Dark Theme
@@ -57,29 +67,29 @@ class AppTheme {
 
   // static get _inputDecorationTheme => InputDecorationTheme(
   //       filled: true,
-  //       fillColor: Palette.COLOR_SURFACE_LIGHT,
+  //       fillColor: Palette.WHITE,
   //       contentPadding: const EdgeInsets.all(16.0),
-  //       hintStyle: TextStyle(
-  //         color: Palette.COLOR_ON_BACKGROUND_LIGHT.withOpacity(0.3),
-  //       ),
+  //       // hintStyle: TextStyle(
+  //       //   color: Palette.COLOR_ON_BACKGROUND_LIGHT.withOpacity(0.3),
+  //       // ),
   //       enabledBorder: OutlineInputBorder(
   //         borderRadius: BorderRadius.circular(20.0),
   //         borderSide: const BorderSide(
-  //           color: Palette.COLOR_SURFACE_BORDER_LIGHT,
+  //           color: Palette.GRAY,
   //           width: 3,
   //         ),
   //       ),
   //       disabledBorder: OutlineInputBorder(
   //         borderRadius: BorderRadius.circular(20.0),
   //         borderSide: const BorderSide(
-  //           color: Palette.COLOR_SURFACE_BORDER_LIGHT,
+  //           color: Colors.transparent,
   //           width: 3,
   //         ),
   //       ),
   //       focusedBorder: OutlineInputBorder(
   //         borderRadius: BorderRadius.circular(20.0),
   //         borderSide: BorderSide(
-  //           color: Palette.COLOR_ON_BACKGROUND_LIGHT.withOpacity(0.25),
+  //           color: Palette.PURPLE.withOpacity(0.25),
   //           width: 3,
   //         ),
   //       ),

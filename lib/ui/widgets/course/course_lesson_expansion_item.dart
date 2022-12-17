@@ -13,6 +13,7 @@ class CourseLessonExpansionItem extends StatelessWidget {
     return Card(
       elevation: 0,
       color: Palette.WHITE,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Padding(

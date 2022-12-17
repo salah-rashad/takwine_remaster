@@ -14,6 +14,7 @@ class CourseLessonItemShimmer extends StatelessWidget {
     var size = context.mediaQuery.size;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Palette.WHITE,
         borderRadius: BorderRadius.circular(2.0),

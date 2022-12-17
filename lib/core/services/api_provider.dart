@@ -4,70 +4,70 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:dio_http_cache/dio_http_cache.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/helpers/utils/logger.dart';
-import '../helpers/constants/api_urls.dart';
+import '../controllers/auth/auth_controller.dart';
 import '../helpers/constants/constants.dart';
+import '../helpers/constants/urls.dart';
 import '../helpers/utils/app_snackbar.dart';
 import '../helpers/utils/cache_manager.dart';
 import '../helpers/utils/connectivity.dart';
-import 'api_account.dart';
-import 'api_auth.dart';
-import 'api_courses.dart';
+import '../helpers/utils/go.dart';
 
 typedef MapConverter<T> = T Function(Map<String, dynamic> map);
 
 class ApiProvider {
   late Dio _dio;
-  late DioCacheManager _dioCacheManager;
-  // final CacheManager _cacheManager = CacheManager();
+  CancelToken cancelToken = CancelToken();
 
-  final ApiAuth auth = ApiAuth();
-  final ApiAccount account = ApiAccount();
-  final ApiCourses courses = ApiCourses();
-  // static final _APIDocs docs = _APIDocs();
-
-  String? token = '';
+  String? get token => CacheManager.getToken();
 
   final BaseOptions options = BaseOptions(
     baseUrl: ApiUrls.HOST_URL,
     receiveDataWhenStatusError: true,
-    connectTimeout: 60 * 1000, // 60 seconds
-    receiveTimeout: 60 * 1000, // 60 seconds
+    connectTimeout: 30 * 1000, // 30 seconds
+    receiveTimeout: 30 * 1000, // 30 seconds
   );
 
-  static final ApiProvider _instance = ApiProvider._internal();
-  factory ApiProvider() => _instance;
-
-  ApiProvider._internal() {
-    token = CacheManager.getToken();
-
-    _dioCacheManager = DioCacheManager(CacheConfig());
-
+  ApiProvider() {
     _dio = Dio(options);
-    _dio.interceptors.add(_dioCacheManager.interceptor);
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
-          options.headers.addAll({"Cookie": token});
-          return handler.next(options);
+        onRequest: (requestOptions, handler) async {
+          if (await Connectivity.isInternetConnected(debug: false)) {
+            requestOptions.headers.addAll({"Cookie": token});
+            requestOptions.cancelToken = cancelToken;
+            return handler.next(requestOptions);
+          } else {
+            AppSnackbar.noInternet();
+            return handler.reject(
+              DioError(
+                requestOptions: requestOptions,
+                error: "No Internet Connection!",
+              ),
+            );
+          }
         },
         onResponse: (response, handler) async {
-          //get cooking from response
+          //get cookie from response
           final cookies = response.headers.map['set-cookie'];
+
           if (cookies != null && cookies.isNotEmpty) {
             final authToken = cookies[0].split(';')[0];
-            token = authToken;
 
-            await CacheManager.setToken(token);
+            await CacheManager.setToken(authToken);
             await CacheManager.setFullToken(cookies[0]);
           }
+
+          logResponse(response);
           return handler.next(response);
         },
         onError: (error, handler) async {
-          return handler.next(error);
+          var e = handleError(error);
+          return handler.next(e);
           // var origin = error.response?.requestOptions;
           // if (error.response?.statusCode == 401) {
           //   try {
@@ -89,29 +89,13 @@ class ApiProvider {
   Future<Response?> GET(String url) async {
     Response? response;
 
-    if (await Connectivity.isInternetConnected()) {
-      try {
-        response = await _dio.get(url);
-      } on DioError catch (e) {
-        response = e.response;
-        if (response != null) {
-          switch (response.statusCode) {
-            case HttpStatus.unauthorized:
-              // _trySignOut();
-              break;
-            case HttpStatus.badRequest:
-            default:
-              handleBadRequestMessage(response.data);
-          }
-        }
-      } catch (e) {
-        rethrow;
-      }
-    } else {
-      AppSnackbar.noInternet();
+    try {
+      response = await _dio.get(url);
+    } on DioError catch (e) {
+      response = e.response;
+    } catch (e) {
+      rethrow;
     }
-
-    logResponse(url, response);
 
     return response;
   }
@@ -119,30 +103,13 @@ class ApiProvider {
   Future<Response?> POST(String url, {dynamic data}) async {
     Response? response;
 
-    if (await Connectivity.isInternetConnected()) {
-      try {
-        response = await _dio.post(url, data: data);
-      } on DioError catch (e) {
-        response = e.response;
-
-        if (response != null) {
-          switch (response.statusCode) {
-            case HttpStatus.unauthorized:
-              // _trySignOut();
-              break;
-            case HttpStatus.badRequest:
-            default:
-              handleBadRequestMessage(response.data);
-          }
-        }
-      } catch (e) {
-        rethrow;
-      }
-    } else {
-      AppSnackbar.noInternet();
+    try {
+      response = await _dio.post(url, data: data);
+    } on DioError catch (e) {
+      response = e.response;
+    } catch (e) {
+      rethrow;
     }
-
-    logResponse(url, response);
 
     return response;
   }
@@ -150,40 +117,39 @@ class ApiProvider {
   Future<Response?> PUT(String url, {dynamic data}) async {
     Response? response;
 
-    if (await Connectivity.isInternetConnected()) {
-      try {
-        response = await _dio.put(url, data: data);
-      } on DioError catch (e) {
-        response = e.response;
-
-        if (response != null) {
-          switch (response.statusCode) {
-            case HttpStatus.unauthorized:
-              // _trySignOut();
-              break;
-            case HttpStatus.badRequest:
-            default:
-              handleBadRequestMessage(response.data);
-          }
-        }
-      } catch (e) {
-        rethrow;
-      }
-    } else {
-      AppSnackbar.noInternet();
+    try {
+      response = await _dio.put(url, data: data);
+    } on DioError catch (e) {
+      response = e.response;
+    } catch (e) {
+      rethrow;
     }
-
-    logResponse(url, response);
 
     return response;
   }
 
-  Future<T?> fetch<T>(
-    String url,
-    MapConverter<T> convert, {
-    bool saveCache = true,
-  }) async {
-    return await _fetchData<T>(url, convert, saveCache);
+  Future<Response?> DELETE(String url, {dynamic data}) async {
+    Response? response;
+
+    try {
+      response = await _dio.delete(url, data: data);
+    } on DioError catch (e) {
+      response = e.response;
+    } catch (e) {
+      rethrow;
+    }
+
+    return response;
+  }
+
+  Future<T?> fetch<T>(String url, MapConverter<T> convert,
+      {bool saveCache = true}) async {
+    var data = await _fetchData<T>(url, convert, saveCache);
+    if (data is T) {
+      return data;
+    } else {
+      return null;
+    }
   }
 
   Future<List<T>> fetchList<T>(
@@ -191,14 +157,20 @@ class ApiProvider {
     MapConverter<T> convert, {
     bool saveCache = true,
   }) async {
-    return await _fetchData<T>(url, convert, saveCache) ?? <T>[];
+    var data = await _fetchData<T>(url, convert, saveCache);
+
+    if (data is List<T>) {
+      return data;
+    } else {
+      return List<T>.empty();
+    }
   }
 
   /// This function tries fetching data from `url`.
   /// If the response is null or the status code is not `200`,
   /// try to get cached data from storage.
   /// If cache data is null neither, then return null.
-  Future<dynamic> _fetchData<T>(
+  Future<Object?> _fetchData<T>(
     String url,
     MapConverter<T> convert,
     bool saveCache,
@@ -207,13 +179,13 @@ class ApiProvider {
       CacheManager.generalStorage.remove(url);
     }
 
-    var response = await ApiProvider().GET(url);
+    var response = await GET(url);
 
     // represents the raw data like "Map" or "List<Map>"
     dynamic data;
     // this should be the data converted to an Object or List<Object>
     // this is the object that should be returned
-    dynamic object;
+    Object? object;
 
     if (response != null && response.statusCode == 200) {
       data = response.data;
@@ -240,98 +212,63 @@ class ApiProvider {
 
         object = list;
       } else {
-        object = convert(data);
+        if (data is Map<String, dynamic>) {
+          object = convert(data);
+        }
       }
     }
-
-    /* var cache = _cacheManager.read<Map<String, dynamic>>(url);
-
-    if (cache != null) {
-      // if cache found return it's value
-      object = convert(cache);
-
-      // then fetch for new data and update cache
-      ApiProvider().GET(url).then((response) {
-        if (response?.statusCode == 200) {
-          if (saveCache) _cacheManager.write(url, response!.data);
-        }
-      });
-    } else {
-      var response = await ApiProvider().GET(url);
-
-      if (response != null) {
-        if (response.statusCode == 200) {
-          var data = response.data;
-
-          if (data is List) {
-            var list = List<T>.empty(growable: true);
-
-            for (var e in data) {
-              list.add(convert(e));
-            }
-
-            object = list;
-          } else {
-            object = convert(data);
-          }
-
-          if (saveCache) _cacheManager.write(url, data);
-        }
-      }
-    } */
 
     return object;
   }
 
-  /* Future<List<T>> fetchList<T>(
-    String url,
-    T Function(Map<String, dynamic> map) convert, {
-    bool saveCache = true,
-  }) async {
-    if (!saveCache) {
-      CacheManager.generalStorage.remove(url);
-    }
-
-    var list = List<T>.empty(growable: true);
-
-    var cache = _cacheManager.read<List>(url);
-
-    if (cache == null) {
-      var response = await ApiProvider().GET(url);
-
-      if (response != null) {
-        if (response.statusCode == 200) {
-          var data = response.data;
-
-          if (data is List) {
-            for (var e in data) {
-              list.add(convert(e));
-            }
-            if (saveCache) _cacheManager.write(url, data);
-          }
-        }
-      }
+  DioError handleError(DioError e) {
+    if (e.response != null) {
+      logResponse(e.response!);
     } else {
-      for (var e in cache) {
-        list.add(convert(e));
-      }
-
-      ApiProvider().GET(url).then((response) {
-        if (response != null) {
-          if (response.statusCode == 200) {
-            if (saveCache) _cacheManager.write(url, response.data);
-          }
-        }
-      });
+      Logger.Red.log(
+        "${e.requestOptions.path} - [${e.requestOptions.method}] ${e.message}",
+        name: "ERROR!",
+        error: e.error,
+      );
     }
 
-    return list;
-  } */
+    var response = e.response;
+    if (response != null) {
+      switch (response.statusCode) {
+        case HttpStatus.unauthorized:
+          _trySignOut();
+          break;
+        case HttpStatus.badRequest:
+        default:
+          handleBadRequestMessage(response.data);
+      }
+    }
 
-  static void handleBadRequestMessage(dynamic data) {
-    List<Widget> messages = [];
+    return e;
+  }
 
+  static Widget _header(value) => Text(
+        "$value:".toUpperCase(),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      );
+
+  static Widget _item(value) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Text(
+          value.toString(),
+          style: const TextStyle(
+            color: Color(0xFFD53939),
+          ),
+        ),
+      );
+
+  static void handleBadRequestMessage(data) {
     if (data is Map<String, dynamic>) {
+      List<Widget> messages = [];
+
       for (var entry in data.entries) {
         var key = entry.key;
         var value = entry.value;
@@ -339,49 +276,21 @@ class ApiProvider {
         key = responseMessageKeysTranslationsMap[key] ?? key;
 
         if (key != "message") {
-          messages.add(
-            Text(
-              "$key:".toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          );
+          messages.add(_header(key));
         }
 
         if (value is List) {
           for (var v in value) {
-            messages.add(
-              Padding(
-                padding: const EdgeInsets.only(left: 32.0, top: 8.0),
-                child: Text(
-                  v.toString(),
-                  style: const TextStyle(
-                    color: Color(0xFFD53939),
-                  ),
-                ),
-              ),
-            );
+            messages.add(_item(v));
           }
           messages.add(const SizedBox(height: 16.0));
         } else {
-          messages.add(
-            Padding(
-              padding: const EdgeInsets.only(left: 32.0, top: 8.0),
-              child: Text(
-                value.toString(),
-                style: const TextStyle(
-                  color: Color(0xFFD53939),
-                ),
-              ),
-            ),
-          );
+          messages.add(_item(value));
         }
       }
 
       AppSnackbar.custom(
-        Column(
+        content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: messages,
@@ -390,24 +299,26 @@ class ApiProvider {
     }
   }
 
-  // void _trySignOut() {
-  //   var ctx = Go().context;
+  void _trySignOut() {
+    try {
+      var ctx = Go().context;
 
-  //   if (ctx != null) {
-  //     ctx.read<AuthController>().signOut(ctx, forced: true);
-  //   } else {
-  //     Logger.Yellow.log("[$this] Couldn't sign out!");
-  //   }
-  // }
-
-  void logResponse(String url, Response? response) {
-    if (response == null) {
-      Logger.Red.log(url, name: "error");
-      return;
+      if (ctx != null) {
+        ctx.read<AuthController>().signOut(ctx, forced: true);
+      } else {
+        throw Error;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("[$this] Couldn't sign out!");
+      }
     }
+  }
+
+  void logResponse(Response response) {
+    var url = response.requestOptions.path;
     var statusCode = response.statusCode;
     var statusMessage = response.statusMessage;
-    // var url = response.requestOptions.uri.toString();
     var method = response.requestOptions.method;
 
     String prefix = "";
@@ -427,18 +338,16 @@ class ApiProvider {
         break;
     }
 
-    var logText = "$url - $statusCode $statusMessage";
+    var logMessage = "$url - $statusCode $statusMessage";
 
     if (response.statusCode.toString().startsWith("2")) {
-      Logger.Green.log(logText, name: prefix);
-    } else if (response.statusCode == HttpStatus.badRequest) {
-      Logger.Red.log(
-        logText,
-        name: prefix,
-        error: response.data.toString(),
-      );
+      Logger.Green.log(logMessage, name: prefix);
     } else {
-      Logger.Red.log(logText, name: prefix);
+      Logger.Red.log(
+        logMessage,
+        name: prefix,
+        error: response.data is Map ? response.data.toString() : null,
+      );
     }
   }
 }

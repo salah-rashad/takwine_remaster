@@ -8,31 +8,28 @@ class DocumentItemShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          ShimmerBase(
-            color: Palette.PURPLE,
-            width: 140.0,
-            height: 130.0,
-            radius: 4.0,
-          ),
-          SizedBox(
-            height: 4,
-          ),
-          ShimmerBase(
-            color: Palette.PURPLE,
-            width: 120.0,
-            height: 18.0,
-            radius: 4.0,
-          ),
-          SizedBox(
-            height: 2,
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        ShimmerBase(
+          color: Palette.PURPLE,
+          width: 140.0,
+          height: 130.0,
+          radius: 4.0,
+        ),
+        SizedBox(
+          height: 4,
+        ),
+        ShimmerBase(
+          color: Palette.PURPLE,
+          width: 120.0,
+          height: 18.0,
+          radius: 4.0,
+        ),
+        SizedBox(
+          height: 2,
+        ),
+      ],
     );
   }
 }

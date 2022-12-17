@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import '../../../helpers/constants/urls.dart';
+import '../../takwine_file.dart';
 import 'course_category.dart';
 
 class Course {
@@ -8,8 +10,8 @@ class Course {
   final String? title;
   final String? description;
   final CourseCategory? category;
-  final String? imageUrl;
-  final String? pdfUrl;
+  String? imageUrl;
+  final TakwineFile? guideFile;
   final String? videoUrl;
   final String? date;
   final bool? enabled;
@@ -23,14 +25,22 @@ class Course {
     this.description,
     this.category,
     this.imageUrl,
-    this.pdfUrl,
+    this.guideFile,
     this.videoUrl,
     this.date,
     this.enabled,
     this.rate,
     this.days,
     this.totalEnrollments,
-  });
+  }) {
+    if (imageUrl != null) {
+      bool validURL = Uri.parse(imageUrl!).isAbsolute;
+
+      if (!validURL) {
+        imageUrl = Url.HOST_URI.replace(path: imageUrl!).toString();
+      }
+    }
+  }
 
   Course copyWith({
     int? id,
@@ -38,7 +48,7 @@ class Course {
     String? description,
     CourseCategory? category,
     String? imageUrl,
-    String? pdfUrl,
+    TakwineFile? guideFile,
     String? videoUrl,
     String? date,
     bool? enabled,
@@ -52,7 +62,7 @@ class Course {
       description: description ?? this.description,
       category: category ?? this.category,
       imageUrl: imageUrl ?? this.imageUrl,
-      pdfUrl: pdfUrl ?? this.pdfUrl,
+      guideFile: guideFile ?? this.guideFile,
       videoUrl: videoUrl ?? this.videoUrl,
       date: date ?? this.date,
       enabled: enabled ?? this.enabled,
@@ -69,7 +79,7 @@ class Course {
       'description': description,
       'category': category?.toMap(),
       'imageUrl': imageUrl,
-      'pdfUrl': pdfUrl,
+      'guideFile': guideFile?.toMap(),
       'videoUrl': videoUrl,
       'date': date,
       'enabled': enabled,
@@ -89,7 +99,9 @@ class Course {
           ? CourseCategory.fromMap(map['category'] as Map<String, dynamic>)
           : null,
       imageUrl: map['imageUrl'] != null ? map['imageUrl'] as String : null,
-      pdfUrl: map['pdfUrl'] != null ? map['pdfUrl'] as String : null,
+      guideFile: map['guideFile'] != null
+          ? TakwineFile.fromMap(map['guideFile'] as Map<String, dynamic>)
+          : null,
       videoUrl: map['videoUrl'] != null ? map['videoUrl'] as String : null,
       date: map['date'] != null ? map['date'] as String : null,
       enabled: map['enabled'] != null ? map['enabled'] as bool : null,
@@ -108,7 +120,7 @@ class Course {
 
   @override
   String toString() {
-    return 'Course(id: $id, title: $title, description: $description, category: $category, imageUrl: $imageUrl, pdfUrl: $pdfUrl, videoUrl: $videoUrl, date: $date, enabled: $enabled, rate: $rate, days: $days, totalEnrollments: $totalEnrollments)';
+    return 'Course(id: $id, title: $title, description: $description, category: $category, imageUrl: $imageUrl, guideFile: $guideFile, videoUrl: $videoUrl, date: $date, enabled: $enabled, rate: $rate, days: $days, totalEnrollments: $totalEnrollments)';
   }
 
   @override
@@ -120,7 +132,7 @@ class Course {
         other.description == description &&
         other.category == category &&
         other.imageUrl == imageUrl &&
-        other.pdfUrl == pdfUrl &&
+        other.guideFile == guideFile &&
         other.videoUrl == videoUrl &&
         other.date == date &&
         other.enabled == enabled &&
@@ -136,7 +148,7 @@ class Course {
         description.hashCode ^
         category.hashCode ^
         imageUrl.hashCode ^
-        pdfUrl.hashCode ^
+        guideFile.hashCode ^
         videoUrl.hashCode ^
         date.hashCode ^
         enabled.hashCode ^

@@ -6,16 +6,14 @@ class CourseCategory {
   String? title;
   String? description;
   String? color;
-  String? iconUrl;
-  String? type;
-
+  String? icon;
+  
   CourseCategory({
     this.id,
     this.title,
     this.description,
     this.color,
-    this.iconUrl,
-    this.type,
+    this.icon,
   });
 
   CourseCategory copyWith({
@@ -23,16 +21,14 @@ class CourseCategory {
     String? title,
     String? description,
     String? color,
-    String? iconUrl,
-    String? type,
+    String? icon,
   }) {
     return CourseCategory(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       color: color ?? this.color,
-      iconUrl: iconUrl ?? this.iconUrl,
-      type: type ?? this.type,
+      icon: icon ?? this.icon,
     );
   }
 
@@ -42,8 +38,7 @@ class CourseCategory {
       'title': title,
       'description': description,
       'color': color,
-      'iconUrl': iconUrl,
-      'type': type,
+      'icon': icon,
     };
   }
 
@@ -51,11 +46,9 @@ class CourseCategory {
     return CourseCategory(
       id: map['id'] != null ? map['id'] as int : null,
       title: map['title'] != null ? map['title'] as String : null,
-      description:
-          map['description'] != null ? map['description'] as String : null,
+      description: map['description'] != null ? map['description'] as String : null,
       color: map['color'] != null ? map['color'] as String : null,
-      iconUrl: map['iconUrl'] != null ? map['iconUrl'] as String : null,
-      type: map['type'] != null ? map['type'] as String : null,
+      icon: map['icon'] != null ? map['icon'] as String : null,
     );
   }
 
@@ -66,28 +59,27 @@ class CourseCategory {
 
   @override
   String toString() {
-    return 'CourseCategory(id: $id, title: $title, description: $description, color: $color, iconUrl: $iconUrl, type: $type)';
+    return 'CourseCategory(id: $id, title: $title, description: $description, color: $color, icon: $icon)';
   }
 
   @override
   bool operator ==(covariant CourseCategory other) {
     if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.title == title &&
-        other.description == description &&
-        other.color == color &&
-        other.iconUrl == iconUrl &&
-        other.type == type;
+  
+    return 
+      other.id == id &&
+      other.title == title &&
+      other.description == description &&
+      other.color == color &&
+      other.icon == icon;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-        title.hashCode ^
-        description.hashCode ^
-        color.hashCode ^
-        iconUrl.hashCode ^
-        type.hashCode;
+      title.hashCode ^
+      description.hashCode ^
+      color.hashCode ^
+      icon.hashCode;
   }
 }

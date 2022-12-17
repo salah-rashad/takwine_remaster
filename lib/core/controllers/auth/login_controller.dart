@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 
 import '../../helpers/enums/auth_status_enum.dart';
 import '../../helpers/utils/cache_manager.dart';
-import '../../helpers/utils/change_notifier_state_logger.dart';
+import '../../helpers/utils/change_notifier_helpers.dart';
 import '../../helpers/utils/logger.dart';
-import '../../services/api_provider.dart';
+import '../../services/api_account.dart';
+import '../../services/api_auth.dart';
 import 'auth_controller.dart';
 
-class LoginController extends ChangeNotifier with ChangeNotifierStateLogger {
+class LoginController extends ChangeNotifier with ChangeNotifierHelpers {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -19,11 +20,11 @@ class LoginController extends ChangeNotifier with ChangeNotifierStateLogger {
 
   /* ***************** */
 
-  bool _isValid = false;
+  bool _isEmailValid = false;
 
-  bool get isValid => _isValid;
-  set isValid(bool v) {
-    _isValid = v;
+  bool get isEmailValid => _isEmailValid;
+  set isEmailValid(bool v) {
+    _isEmailValid = v;
     notifyListeners();
   }
 
@@ -49,13 +50,17 @@ class LoginController extends ChangeNotifier with ChangeNotifierStateLogger {
 
   /* ***************** */
 
-  //*   Login with Email & Password   **/
+  /// Check if Email string is valid
+  void validateEmail(String email) {
+    isEmailValid = EmailValidator.validate(email);
+  }
 
+  /// Login with Email & Password
   Future<bool> loginWithEmailPassword(AuthController auth) async {
     bool result = false;
     isLoading = true;
 
-    var response = await ApiProvider().auth.loginUser(email, password);
+    var response = await ApiAuth.loginUser(email, password);
 
     if (response != null) {
       if (response.statusCode == HttpStatus.ok) {
@@ -67,10 +72,8 @@ class LoginController extends ChangeNotifier with ChangeNotifierStateLogger {
         Logger.Magenta.log("TOKEN: $token");
 
         auth.status = AuthStatus.LOGGED_IN;
-        auth.user = await ApiProvider().account.getProfile();
-        ApiProvider().account.getLastActivity().then(
-              (value) => auth.lastActivity = value,
-            );
+        auth.user = await ApiAccount.getProfile();
+        auth.fetchLastActivity();
 
         result = true;
 
@@ -82,57 +85,4 @@ class LoginController extends ChangeNotifier with ChangeNotifierStateLogger {
 
     return result;
   }
-
-  //**   Check if Email string is valid   **/
-
-  void validateEmail(String email) {
-    isValid = EmailValidator.validate(email);
-  }
-
-  //**   Validate login inputs and show error snackbar   **/
-
-  // void validateLogin(String? message, {bool isSocialLogin = false}) {
-  //   switch (message) {
-
-  //     /**  API Errors **/
-
-  //     case "Email is required":
-  //       ReadySnackBar(
-  //         "خطأ!",
-  //         isSocialLogin
-  //             ? "حدث خطأ ما!، يرجى المحاولة مرة أخرى."
-  //             : "البريد الإلكتروني يجب ألا يكون فارغاً.",
-  //       ).showError();
-  //       break;
-  //     case "Password is required":
-  //       ReadySnackBar(
-  //         "خطأ!",
-  //         "كلمة المرور يجب ألا تكون فارغة.",
-  //       ).showError();
-  //       break;
-  //     case "Login Failed. User not Found":
-  //       isSocialLogin
-  //           ? ReadySnackBar(
-  //               "خطأ!",
-  //               "هذا الحساب غير موجود، هل تريد إنشاء حساب جديد؟ ",
-  //             ).prompt(
-  //               onConfirm: () => Get.toNamed(Routes.REGISTER),
-  //               onCancel: null,
-  //             )
-  //           : ReadySnackBar(
-  //               "خطأ!",
-  //               "حدث خطأ ما، من فضلك تأكد من البريد الإلكتروني وكلمة المرور.",
-  //             ).showError();
-  //       break;
-  //     case "Login Successful":
-  //       passwordController.clear();
-  //       // result = true;
-  //       break;
-  //     default:
-  //       ReadySnackBar(
-  //         "خطأ!",
-  //         message.toString(),
-  //       ).showError();
-  //   }
-  // }
 }

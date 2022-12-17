@@ -1,74 +1,104 @@
 import 'package:flutter/material.dart';
 
-import '../../helpers/constants/api_urls.dart';
-import '../../helpers/utils/change_notifier_state_logger.dart';
+import '../../helpers/constants/urls.dart';
+import '../../helpers/utils/change_notifier_helpers.dart';
 import '../../models/course_models/course/course.dart';
+import '../../models/course_models/course_bookmark.dart';
 import '../../models/course_models/enrollment/enrollment.dart';
 import '../../models/course_models/lesson/lesson.dart';
-import '../../services/api_provider.dart';
+import '../../services/api_account.dart';
+import '../../services/api_courses.dart';
 
-class SingleCourseController extends ChangeNotifier
-    with ChangeNotifierStateLogger {
+class SingleCourseController extends ChangeNotifier with ChangeNotifierHelpers {
   final Course course;
-  String pdfName;
-  SingleCourseController(this.course) : pdfName = "دليل دورة: ${course.title}" {
+  SingleCourseController(this.course) {
     initialize();
   }
 
-  //*******************/
-
   Enrollment? _courseProgress;
+  List<Lesson>? _lessons;
+  CourseBookmark? _bookmark;
+
   Enrollment? get enrollment => _courseProgress;
   set enrollment(Enrollment? value) {
     _courseProgress = value;
     notifyListeners();
   }
 
-  bool get isEnrolled => enrollment != null;
-
-  //*******************/
-
-  List<Lesson>? _lessons;
   List<Lesson>? get lessons => _lessons;
   set lessons(List<Lesson>? value) {
     _lessons = value;
     notifyListeners();
   }
 
-  //*******************/
+  CourseBookmark? get bookmark => _bookmark;
+  set bookmark(CourseBookmark? value) {
+    _bookmark = value;
+    notifyListeners();
+  }
 
-  //*******************/
+  bool get isEnrolled => enrollment != null;
+  bool get isBookmarked =>
+      bookmark != null && bookmark != CourseBookmark.empty();
+
+  //*******************//
 
   Future<void> initialize() async {
-    pdfName = "دليل دورة: ${course.title}";
-
     initEnrollment();
     initLessons();
+    initBookmark();
   }
 
   void initEnrollment() {
-    enrollment = ApiUrls.ENROLLMENTS_single(course.id!)
+    enrollment = ApiUrls.ACCOUNT_enrollments_single(course.id)
         .getCache((map) => Enrollment.fromMap(map));
-    ApiProvider()
-        .account
-        .getSingleEnrollment(course.id!)
+    ApiAccount.getSingleEnrollment(course.id)
         .then((value) => enrollment = value);
   }
 
   void initLessons() {
-    lessons = ApiUrls.COURSE_lessons(course.id!).getCache(
+    lessons = ApiUrls.COURSES_lessons(course.id).getCache(
       (map) => Lesson.fromMap(map),
     );
-    ApiProvider()
-        .courses
-        .getLessons(course.id!)
-        .then((value) => lessons = value);
+    ApiCourses.getLessons(course.id).then((value) => lessons = value);
+  }
+
+  void initBookmark() {
+    bookmark = ApiUrls.ACCOUNT_course_bookmarks_single(course.id).getCache(
+      (map) => CourseBookmark.fromMap(map),
+    );
+    ApiAccount.getSingleCourseBookmark(course.id).then((value) {
+      if (value != null) {
+        bookmark = value;
+      } else {
+        bookmark = CourseBookmark.empty();
+      }
+    });
   }
 
   Future<void> enroll() async {
     if (course.id != null) {
       enrollment = null;
-      enrollment = await ApiProvider().account.enrollInCourse(course.id!);
+      enrollment = await ApiAccount.enrollInCourse(course.id);
+    }
+  }
+
+  Future<void> toggleBookmark() async {
+    final currentValue = bookmark?.copyWith();
+
+    bool shouldRemove = isBookmarked;
+
+    bookmark = null;
+    if (shouldRemove) {
+      bool success = await ApiAccount.removeCourseBookmark(course.id);
+      if (success) {
+        bookmark = CourseBookmark.empty();
+      } else {
+        bookmark = currentValue;
+      }
+    } else {
+      bookmark = await ApiAccount.addCourseBookmark(course.id) ??
+          CourseBookmark.empty();
     }
   }
 }

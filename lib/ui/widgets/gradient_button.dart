@@ -32,6 +32,7 @@ class GradientButton extends StatelessWidget {
         Container(
           width: width,
           height: height,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [leftColor, rightColor],

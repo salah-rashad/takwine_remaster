@@ -4,14 +4,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/controllers/courses/enrollment/materials_controller.dart';
+import '../../../core/controllers/courses/enrollment/classroom_controller.dart';
 import '../../../core/controllers/courses/enrollment/exam_controller.dart';
-import '../../../core/helpers/routes/routes.dart';
 import '../../theme/palette.dart';
 import '../material_step_item.dart';
 
-class MaterialsNavBar extends StatelessWidget {
-  final MaterialsController controller;
+class ClassroomNavBar extends StatelessWidget {
+  final ClassroomController controller;
   final ExamController examController;
 
   final stepItemSize = 28.0;
@@ -19,7 +18,7 @@ class MaterialsNavBar extends StatelessWidget {
   final fabSize = 32.0;
   final navHeight = 64.0;
 
-  const MaterialsNavBar({
+  const ClassroomNavBar({
     super.key,
     required this.controller,
     required this.examController,

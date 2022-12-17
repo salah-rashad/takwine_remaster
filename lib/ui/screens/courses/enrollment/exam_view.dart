@@ -4,24 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/controllers/courses/enrollment/exam_controller.dart';
-import '../../../../core/helpers/utils/app_snackbar.dart';
 import '../../../../core/models/course_models/exam/question.dart';
 import '../../../../core/models/course_models/lesson/lesson.dart';
 import '../../../theme/palette.dart';
 
-class LessonExamView extends StatelessWidget {
+class ExamView extends StatelessWidget {
   final Lesson lesson;
   final ExamController controller;
 
-  const LessonExamView(this.lesson, this.controller, {super.key});
+  const ExamView(this.lesson, this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: controller,
       builder: (context, _) {
-        final c = context.watch<ExamController>();
-        var questions = c.questions;
+        // final controller = context.watch<ExamController>();
+        var questions = controller.questions;
 
         if (questions != null) {
           if (questions.isNotEmpty) {
@@ -49,7 +48,7 @@ class LessonExamView extends StatelessWidget {
                               height: 4.0,
                               curve: Curves.easeInOutQuart,
                               width: (cons.maxWidth / questions.length) *
-                                  (c.currentIndex + 1),
+                                  (controller.currentIndex + 1),
                               decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
@@ -73,10 +72,11 @@ class LessonExamView extends StatelessWidget {
                     ),
                     Expanded(
                       child: PageView.builder(
-                        controller: c.pageController,
+                        controller: controller.pageController,
                         itemCount: questions.length,
                         physics: const ClampingScrollPhysics(),
-                        onPageChanged: (index) => c.currentIndex = index,
+                        onPageChanged: (index) =>
+                            controller.currentIndex = index,
                         itemBuilder: (context, index) {
                           var question = questions[index];
 
@@ -106,7 +106,8 @@ class LessonExamView extends StatelessWidget {
                                   physics: const BouncingScrollPhysics(),
                                   shrinkWrap: true,
                                   itemBuilder: (context, index) {
-                                    return choiceButton(index, c, question);
+                                    return choiceButton(
+                                        index, controller, question);
                                   },
                                 ),
                               ),
@@ -121,12 +122,12 @@ class LessonExamView extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           GestureDetector(
-                            onTap: c.previousPage,
+                            onTap: controller.previousPage,
                             child: Container(
                               height: 32.0,
                               width: 32.0,
                               decoration: BoxDecoration(
-                                color: c.currentIndex - 1 < 0
+                                color: controller.currentIndex - 1 < 0
                                     ? Palette.GRAY
                                     : const Color(0xFFEF817B),
                                 shape: BoxShape.circle,
@@ -142,13 +143,13 @@ class LessonExamView extends StatelessWidget {
                             ),
                           ),
                           GestureDetector(
-                            onTap: c.nextPage,
+                            onTap: controller.nextPage,
                             child: Container(
                               height: 32.0,
                               width: 32.0,
                               decoration: BoxDecoration(
-                                color: c.currentIndex + 1 >=
-                                        (c.questions?.length ?? 0)
+                                color: controller.currentIndex + 1 >=
+                                        (controller.questions?.length ?? 0)
                                     ? Palette.GRAY
                                     : const Color(0xFFEF817B),
                                 shape: BoxShape.circle,
@@ -168,7 +169,7 @@ class LessonExamView extends StatelessWidget {
                 ),
                 Builder(
                   builder: (context) {
-                    if (c.examStatus != ExamStatus.None) {
+                    if (controller.examStatus != ExamStatus.None) {
                       return const IgnorePointer();
                     } else {
                       return Positioned.fill(
@@ -192,8 +193,8 @@ class LessonExamView extends StatelessWidget {
                                     height: 16.0,
                                   ),
                                   ElevatedButton(
-                                    onPressed: () =>
-                                        c.examStatus = ExamStatus.Started,
+                                    onPressed: () => controller.examStatus =
+                                        ExamStatus.Started,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Palette.BLUE1,
                                     ),
@@ -235,7 +236,7 @@ class LessonExamView extends StatelessWidget {
     Question question,
   ) {
     String? choiceText = question.choices?[index];
-    bool isChosen = c.getChosenAnswer(question.id!) == choiceText;
+    bool isChosen = c.getAnswer(question.id!) == choiceText;
 
     return GestureDetector(
       onTap: () async {
@@ -247,6 +248,7 @@ class LessonExamView extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 45.0),
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 22.0, horizontal: 28.0),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6.0),
           gradient: LinearGradient(

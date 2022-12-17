@@ -9,25 +9,30 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../ui/theme/palette.dart';
+import '../helpers/utils/app_snackbar.dart';
+import '../helpers/utils/change_notifier_helpers.dart';
 import '../helpers/utils/permissions_manager.dart';
+import '../models/takwine_file.dart';
+import '../helpers/extensions.dart';
 
 enum DownloadStatus {
   none,
   downloading,
   done,
+  error,
 }
 
-class FileController extends ChangeNotifier {
+class FileController extends ChangeNotifier with ChangeNotifierHelpers {
   final BuildContext context;
-  final String? fileUrl;
+  final TakwineFile file;
   final String saveName;
 
   FileController(
     this.context, {
-    required this.fileUrl,
+    required this.file,
     required this.saveName,
   }) {
-    checkIfFileExists();
+    _checkIfFileExists();
   }
 
   int _progress = 0;
@@ -51,14 +56,15 @@ class FileController extends ChangeNotifier {
     notifyListeners();
   }
 
-  String? get fileType => fileUrl?.split(".").last.toString();
+  String? get fileType =>
+      file.extension ?? file.file?.split(".").last.toString();
 
   Future<void> downloadFile() async {
-    if (fileUrl == null) return;
+    if (file.file == null) return;
 
-    String savePath = await getFilePath();
+    String savePath = await _getFilePath();
 
-    if (await checkIfFileExists()) return;
+    if (await _checkIfFileExists()) return;
 
     Dio dio = Dio();
 
@@ -66,23 +72,31 @@ class FileController extends ChangeNotifier {
         await PermissionsManager.checkPermission(Permission.storage);
 
     if (hasPermission) {
-      bool downloadAccepted = await confirmDownloadBottomSheet(fileType);
+      bool downloadAccepted = await _showConfirmDownloadBottomSheet();
 
       if (downloadAccepted) {
         status = DownloadStatus.downloading;
-        await dio.download(
-          fileUrl!,
-          savePath,
-          onReceiveProgress: (rcv, total) {
-            if (kDebugMode) {
-              print(
-                  'received: ${rcv.toStringAsFixed(0)} out of total: ${total.toStringAsFixed(0)}');
-            }
+        try {
+          await dio.download(
+            file.file!,
+            savePath,
+            onReceiveProgress: (rcv, total) {
+              if (kDebugMode) {
+                print(
+                    'received: ${rcv.toStringAsFixed(0)} out of total: ${total.toStringAsFixed(0)}');
+              }
 
-            progress = ((rcv / total) * 100).floor();
-          },
-          deleteOnError: true,
-        );
+              progress = ((rcv / total) * 100).floor();
+            },
+            deleteOnError: true,
+          );
+        } catch (e) {
+          status = DownloadStatus.error;
+          AppSnackbar.error(
+            message:
+                "حدث خطأ ما أثناء تحميل ملف $fileType ، يرجى المحاولة في وقت لاحق.",
+          );
+        }
 
         if (progress == 100) {
           status = DownloadStatus.done;
@@ -91,7 +105,12 @@ class FileController extends ChangeNotifier {
     }
   }
 
-  Future<String> getFilePath() async {
+  void openFile() async {
+    String path = await _getFilePath();
+    OpenFile.open(path);
+  }
+
+  Future<String> _getFilePath() async {
     String path = '';
 
     try {
@@ -120,8 +139,8 @@ class FileController extends ChangeNotifier {
     return path;
   }
 
-  Future<bool> checkIfFileExists() async {
-    String path = await getFilePath();
+  Future<bool> _checkIfFileExists() async {
+    String path = await _getFilePath();
     File file = File(path);
     bool isExists = await file.exists();
     if (isExists) {
@@ -130,68 +149,90 @@ class FileController extends ChangeNotifier {
     return isExists;
   }
 
-  void openFile() async {
-    String path = await getFilePath();
-    OpenFile.open(path);
-  }
-
-  Future<bool> confirmDownloadBottomSheet(String? fileType) async {
+  Future<bool> _showConfirmDownloadBottomSheet() async {
     return await showModalBottomSheet<bool>(
           context: context,
-          builder: (context) => Container(
-            height: 150,
-            width: 150,
-            padding: const EdgeInsets.all(16.0),
-            decoration: const BoxDecoration(
-              color: Palette.WHITE,
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(30.0),
-                topLeft: Radius.circular(30.0),
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text("سيتم تحميل ملف ${fileType!.toUpperCase()}"),
-                const SizedBox(
-                  height: 16.0,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Palette.BABY_BLUE,
-                      ),
-                      child: const Text(
-                        "تحميل",
-                        style: TextStyle(color: Palette.WHITE),
-                      ),
-                      onPressed: () {
-                        Navigator.pop<bool>(context, true);
-                      },
-                    ),
-                    const SizedBox(
-                      width: 16.0,
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Palette.WHITE,
-                      ),
-                      child: const Text(
-                        "إلغاء",
-                        style: TextStyle(color: Palette.RED),
-                      ),
-                      onPressed: () {
-                        Navigator.pop<bool>(context, false);
-                      },
-                    ),
-                  ],
-                ),
-              ],
+          backgroundColor: Palette.WHITE,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(16.0),
+              topLeft: Radius.circular(16.0),
             ),
           ),
+          builder: (context) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "طلب تحميل ملف",
+                    style: TextStyle(fontSize: 18.0),
+                  ),
+                  const SizedBox(
+                    height: 16.0,
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      text: "النوع:   ",
+                      children: [
+                        TextSpan(
+                            text: fileType!.toUpperCase(),
+                            style: const TextStyle(color: Colors.blueGrey))
+                      ],
+                    ),
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      text: "الحجم:   ",
+                      children: [
+                        TextSpan(
+                          text: file.size?.readableFileSize(),
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16.0,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Palette.BLUE2,
+                        ),
+                        child: const Text(
+                          "تحميل",
+                          style: TextStyle(color: Palette.WHITE),
+                        ),
+                        onPressed: () {
+                          Navigator.pop<bool>(context, true);
+                        },
+                      ),
+                      const SizedBox(
+                        width: 16.0,
+                      ),
+                      TextButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Palette.RED,
+                        ),
+                        child: const Text("إلغاء"),
+                        onPressed: () {
+                          Navigator.pop<bool>(context, false);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
         ) ??
         false;
   }

@@ -1,28 +1,34 @@
-import 'package:flutter/material.dart';
-
-import '../../helpers/constants/api_urls.dart';
-import '../../helpers/utils/change_notifier_state_logger.dart';
+import '../../helpers/constants/urls.dart';
 import '../../models/course_models/course/course.dart';
+import '../../models/course_models/course/course_category.dart';
+import '../../models/course_models/course_bookmark.dart';
+import '../../models/course_models/enrollment/certificate.dart';
 import '../../models/course_models/enrollment/enrollment.dart';
 import '../../models/user_models/user_statements.dart';
-import '../../services/api_provider.dart';
+import '../../services/api_account.dart';
+import '../../services/api_courses.dart';
+import '../tabs_controller.dart';
 
-class CoursesController extends ChangeNotifier with ChangeNotifierStateLogger {
+class CoursesController extends TabsController {
   CoursesController() {
     initialize();
   }
 
-  int _index = 0;
+  Set<int> initializedTabs = {};
+
+  CourseCategory? _selectedCategory;
+  CourseCategory? get selectedCategory => _selectedCategory;
+
   List<Course>? _featuredCourses;
-  List<Course>? _allCourses;
+  List<CourseCategory>? _categories;
+  List<Course>? _coursesByCategory;
+
   UserStatements? _statements;
   List<Enrollment>? _enrollments;
 
-  int get currentIndex => _index;
-  set currentIndex(int value) {
-    _index = value;
-    notifyListeners();
-  }
+  List<Certificate>? _certificates;
+
+  List<CourseBookmark>? _bookmarks;
 
   List<Course>? get featuredCourses => _featuredCourses;
   set featuredCourses(List<Course>? value) {
@@ -30,9 +36,16 @@ class CoursesController extends ChangeNotifier with ChangeNotifierStateLogger {
     notifyListeners();
   }
 
-  List<Course>? get allCourses => _allCourses;
-  set allCourses(List<Course>? value) {
-    _allCourses = value;
+  List<CourseCategory>? get categories => _categories;
+  set categories(List<CourseCategory>? value) {
+    _categories = value;
+    notifyListeners();
+  }
+
+  List<Course>? get coursesByCategory => _coursesByCategory;
+  set coursesByCategory(List<Course>? value) {
+    _coursesByCategory = value;
+    _coursesByCategory?.sort((a, b) => (b.rate ?? 0).compareTo(a.rate ?? 0));
     notifyListeners();
   }
 
@@ -48,71 +61,100 @@ class CoursesController extends ChangeNotifier with ChangeNotifierStateLogger {
     notifyListeners();
   }
 
-  PageController pageController = PageController();
-  Set<int> initializedTabs = {};
+  List<Certificate>? get certificates => _certificates;
+  set certificates(List<Certificate>? value) {
+    _certificates = value;
+    notifyListeners();
+  }
+
+  List<CourseBookmark>? get bookmarks => _bookmarks;
+  set bookmarks(List<CourseBookmark>? value) {
+    _bookmarks = value;
+    notifyListeners();
+  }
 
   Future<void> initialize() async {
     // load cached data
-    // for home page
+    // home page
     featuredCourses =
         ApiUrls.COURSES_FEATURED.getCache((map) => Course.fromMap(map));
-    allCourses = ApiUrls.COURSES.getCache((map) => Course.fromMap(map));
+    categories = ApiUrls.COURSES_CATEGORIES
+        .getCache((map) => CourseCategory.fromMap(map));
 
-    // for my activity page
-    statements =
-        ApiUrls.USER_STATEMENTS.getCache((map) => UserStatements.fromMap(map));
+    if (categories != null) {
+      if (categories!.isNotEmpty) {
+        _selectedCategory = categories?[0];
+        coursesByCategory = ApiUrls.COURSES_by_category(categories?[0].id)
+            .getCache((map) => Course.fromMap(map));
+      }
+    }
+    coursesByCategory ??= [];
+
+    // activity page
+    statements = ApiUrls.ACCOUNT_USER_STATEMENTS
+        .getCache((map) => UserStatements.fromMap(map));
     enrollments =
-        ApiUrls.ENROLLMENTS.getCache((map) => Enrollment.fromMap(map));
+        ApiUrls.ACCOUNT_ENROLLMENTS.getCache((map) => Enrollment.fromMap(map));
+
+    // certificates page
+    certificates =
+        ApiUrls.ACCOUNT_CERTIFICATES.getCache((map) => Enrollment.fromMap(map));
+
+    // bookmarks page
+    bookmarks = ApiUrls.ACCOUNT_COURSE_BOOKMARKS
+        .getCache((map) => CourseBookmark.fromMap(map));
 
     await initHomeTab();
   }
 
-  Future<void> initHomeTab({force = false}) async {
+  bool canUpdate(int index, bool force) {
     if (!force) {
-      if (initializedTabs.contains(0)) return;
+      if (initializedTabs.contains(index)) return false;
     }
-    initializedTabs.add(0);
-    // fetch new data
-    featuredCourses = await ApiProvider().courses.getFeaturedCourses();
-    allCourses = await ApiProvider().courses.getAllCourses();
+    initializedTabs.add(index);
+    return true;
+  }
+
+  Future<void> initHomeTab({force = false}) async {
+    if (canUpdate(0, force)) {
+      featuredCourses = await ApiCourses.getFeaturedCourses();
+      categories = await ApiCourses.getAllCourseCategories();
+
+      if (categories != null) {
+        if (categories!.isNotEmpty) {
+          _selectedCategory = categories?[0];
+          coursesByCategory =
+              await ApiCourses.getCoursesByCategory(categories?[0].id);
+        }
+      }
+    }
   }
 
   Future<void> initActivityTab({force = false}) async {
-    if (!force) {
-      if (initializedTabs.contains(1)) return;
+    if (canUpdate(1, force)) {
+      statements = await ApiAccount.getUserStatements();
+      enrollments = await ApiAccount.getEnrollments();
     }
-    initializedTabs.add(1);
-    // fetch new data
-    statements = await ApiProvider().account.getUserStatements();
-    enrollments = await ApiProvider().account.getEnrollments();
   }
 
-  Future<void> iniCertificatesTab({force = false}) async {
-    if (!force) {
-      if (initializedTabs.contains(2)) return;
+  Future<void> initCertificatesTab({force = false}) async {
+    if (canUpdate(2, force)) {
+      certificates = await ApiAccount.getCertificates();
     }
-    initializedTabs.add(2);
-    // fetch new data
   }
 
-  Future<void> iniBookmarksTab({force = false}) async {
-    if (!force) {
-      if (initializedTabs.contains(3)) return;
+  Future<void> initBookmarksTab({force = false}) async {
+    if (canUpdate(3, force)) {
+      bookmarks = await ApiAccount.getCourseBookmarks();
     }
-    initializedTabs.add(3);
-    // fetch new data
   }
 
-  void changeIndex(int index) {
-    // index is auto assigned to "_index" property
-    // through PageView's onPageChanged
-
-    // pageController.animateToPage(
-    //   index,
-    //   duration: const Duration(milliseconds: 300),
-    //   curve: Curves.easeIn,
-    // );
-
-    pageController.jumpToPage(index);
+  Future<void> setSelectedCategory(CourseCategory category) async {
+    if (_selectedCategory == category) return;
+    _selectedCategory = category;
+    coursesByCategory = null;
+    coursesByCategory = ApiUrls.COURSES_by_category(category.id)
+        .getCache((map) => Course.fromMap(map));
+    coursesByCategory = await ApiCourses.getCoursesByCategory(category.id);
   }
 }

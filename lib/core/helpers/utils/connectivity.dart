@@ -3,22 +3,33 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class Connectivity {
-  static Future<bool> isInternetConnected() async {
+  static Future<bool> isInternetConnected({bool debug = false}) async {
+    bool value = false;
+
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        // print('CONNECTION: [TRUE]');
-        return true;
+        value = true;
       } else {
-        // print('CONNECTION: [FALSE]');
-        return false;
+        value = false;
       }
     } on SocketException catch (e) {
-      // print('CONNECTION: [FALSE]');
       if (kDebugMode) {
         print(e.toString());
       }
-      return false;
+      value = false;
     }
+
+    if (kDebugMode) {
+      if (debug) {
+        if (value) {
+          print('CONNECTION: [TRUE]');
+        } else {
+          print('CONNECTION: [FALSE]');
+        }
+      }
+    }
+
+    return value;
   }
 }

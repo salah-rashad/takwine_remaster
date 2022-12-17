@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../ui/widgets/dialogs/loading_dialog.dart';
-import '../../../helpers/utils/change_notifier_state_logger.dart';
+import '../../../helpers/utils/change_notifier_helpers.dart';
 import '../../../helpers/utils/connectivity.dart';
 import '../../../models/course_models/exam/exam.dart';
 import '../../../models/course_models/exam/question.dart';
 import '../../../models/course_models/lesson/lesson.dart';
-import '../../../services/api_provider.dart';
+import '../../../services/api_account.dart';
+import '../../../services/api_courses.dart';
 
 enum ExamStatus {
   None,
@@ -15,9 +16,11 @@ enum ExamStatus {
   Complete,
 }
 
-class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
+class ExamController extends ChangeNotifier with ChangeNotifierHelpers {
   final Lesson lesson;
-  ExamController(this.lesson);
+  ExamController(this.lesson) {
+    initialize();
+  }
 
   int _index = 0;
   Exam? _exam;
@@ -30,6 +33,10 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
   set currentIndex(int value) {
     _index = value;
     notifyListeners();
+    if (kDebugMode) {
+      var answer = questions?[_index].answer;
+      print("CORRECT IS $answer");
+    }
   }
 
   Exam? get exam => _exam;
@@ -53,10 +60,6 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
       duration: const Duration(milliseconds: 800),
       curve: Curves.easeOutCirc,
     );
-    if (kDebugMode) {
-      var answer = questions?[currentIndex].answer;
-      print("CORRECT IS $answer");
-    }
   }
 
   void previousPage() async {
@@ -66,13 +69,16 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
       duration: const Duration(milliseconds: 800),
       curve: Curves.easeOutCirc,
     );
-    if (kDebugMode) {
-      var answer = questions?[currentIndex].answer;
-      print("CORRECT IS $answer");
+  }
+
+  void updateStatus() {
+    if (userAnswers.isNotEmpty) examStatus = ExamStatus.Started;
+    if (questions?.length == userAnswers.length) {
+      examStatus = ExamStatus.Complete;
     }
   }
 
-  String? getChosenAnswer(int questionId) {
+  String? getAnswer(int questionId) {
     String? answer = userAnswers[questionId];
     return answer;
   }
@@ -93,14 +99,7 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
     }
   }
 
-  void updateStatus() {
-    if (userAnswers.isNotEmpty) examStatus = ExamStatus.Started;
-    if (questions?.length == userAnswers.length) {
-      examStatus = ExamStatus.Complete;
-    }
-  }
-
-  double getExamResult() {
+  double calculateResult() {
     if (questions == null) return 0.0;
 
     int totalCorrectAnswers = 0;
@@ -109,7 +108,7 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
       String? correctAnswer = question.answer;
 
       if (question.id != null) {
-        String? userAnswer = getChosenAnswer(question.id!);
+        String? userAnswer = getAnswer(question.id!);
 
         if (userAnswer == correctAnswer) totalCorrectAnswers++;
       }
@@ -120,7 +119,7 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
   }
 
   Future<double> endExam(BuildContext context) async {
-    double result = getExamResult();
+    double result = calculateResult();
 
     if (kDebugMode) {
       print(result.toString());
@@ -130,14 +129,14 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
       if (await Connectivity.isInternetConnected()) {
         showLoadingDialog(context);
 
-        await ApiProvider()
-            .account
-            .setLessonAsComplete(
-              result,
-              lesson.course!,
-              lesson.id!,
-            )
-            .then((value) => Navigator.pop(context));
+        try {
+          await ApiAccount.setLessonAsComplete(result, lesson.course, lesson.id)
+              .then(
+            (_) => Navigator.pop(context),
+          );
+        } catch (e) {
+          Navigator.pop(context);
+        }
       }
 
       // await formationsController.getLessons().then((userFormations) async {
@@ -183,8 +182,7 @@ class ExamController extends ChangeNotifier with ChangeNotifierStateLogger {
   }
 
   Future<void> initialize() async {
-    exam =
-        await ApiProvider().courses.getLessonExam(lesson.course!, lesson.id!);
+    exam = await ApiCourses.getLessonExam(lesson.course, lesson.id);
   }
 
   @override

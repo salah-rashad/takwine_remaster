@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/helpers/constants/font_awesome_icons.dart';
+import '../../../core/helpers/utils/helpers.dart';
 import '../../../core/helpers/utils/hex_color.dart';
 import '../../../core/models/course_models/enrollment/enrollment.dart';
 import '../../theme/palette.dart';
@@ -14,12 +16,15 @@ class EnrollmentItem extends StatelessWidget {
     super.key,
   });
 
+  String? get color => enrollment.course?.category?.color;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Material(
         color: Palette.WHITE,
+        clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -37,20 +42,15 @@ class EnrollmentItem extends StatelessWidget {
                     aspectRatio: 1,
                     child: Container(
                       padding: const EdgeInsets.all(16.0),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        color:
-                            HexColor(enrollment.course?.category?.color ?? ""),
+                        color: HexColor(color ?? ""),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
-                      child: const Center(
-                          // child: SvgPicture.network(
-                          //   ApiURLs.HOST_URL +
-                          //       "/assets/images/" +
-                          //       HexColor(course?.course?.category?.color ?? "")
-                          //           .toString() +
-                          //       ".svg",
-                          // ),
-                          ),
+                      child: Icon(
+                        getFontAwesomeIcon(enrollment.course?.category?.icon),
+                        color: getFontColorForBackground(HexColor(color ?? "")),
+                      ),
                     ),
                   ),
                 ),

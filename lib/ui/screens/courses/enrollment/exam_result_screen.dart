@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/helpers/extensions.dart';
-import '../../../../core/helpers/routes/routes.dart';
+import '../../../../core/models/course_models/lesson/lesson.dart';
+import '../../../../core/services/api_account.dart';
 import '../../../theme/palette.dart';
+import '../../../widgets/dialogs/celebration_dialog.dart';
 
 class ExamResultScreen extends StatelessWidget {
+  final Lesson lesson;
   final double result;
-  const ExamResultScreen({super.key, required this.result});
+  const ExamResultScreen(
+      {super.key, required this.lesson, required this.result});
 
   bool get isSuccessful => result >= 70.0;
 
@@ -77,6 +81,7 @@ class ExamResultScreen extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => proceed(context),
                         icon: const Icon(Icons.arrow_back_rounded),
+                        clipBehavior: Clip.antiAlias,
                         style: ElevatedButton.styleFrom(
                           foregroundColor: isSuccessful
                               ? const Color(0xFF6F3888)
@@ -106,7 +111,21 @@ class ExamResultScreen extends StatelessWidget {
     );
   }
 
-  void proceed(context) {
-    Navigator.pop(context);
+  void proceed(BuildContext context) async {
+    await ApiAccount.getSingleEnrollment(lesson.course).then(
+      (enrollment) {
+        if (enrollment?.isComplete == true && isSuccessful) {
+          Navigator.pop(
+            context,
+          );
+          showDialog(
+            context: context,
+            builder: (context) => const CelebrationDialog(),
+          );
+        } else {
+          Navigator.pop(context);
+        }
+      },
+    );
   }
 }

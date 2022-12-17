@@ -41,29 +41,39 @@ class CacheManager {
   //* READ FROM GENERAL STORAGE
   static T? readAndConvert<T, C>(String key, MapConverter<C> convert) {
     try {
-      dynamic data = generalStorage.read<dynamic>(key);
+      var data = generalStorage.read<dynamic>(key);
 
       if (data != null) {
         if (data is List) {
           var list = List<C>.empty(growable: true);
 
           for (var e in data) {
-            list.add(convert(e));
+            try {
+              var obj = convert(e);
+              list.add(obj);
+            } catch (e) {
+              continue;
+            }
           }
 
           data = list;
         } else {
-          data = convert(data);
+          try {
+            data = convert(data);
+          } catch (e) {
+            return null;
+          }
         }
       }
 
       Logger.Black.log("$key - ${data.runtimeType}", name: "CacheManager");
 
-      return data;
-    } catch (e) {
-      if (kDebugMode) {
-        print("ERROR! : $e");
+      if (data is T) {
+        return data;
+      } else {
+        return null;
       }
+    } catch (e) {
       rethrow;
     }
   }
@@ -80,60 +90,3 @@ class CacheManager {
     }
   }
 }
-
-//? THE BELOW COMMENTED CODE WAS JUST FOR DEBUGGING
-
-//// Future<T> read<T>(String key) async {
-////     try {
-////       T finalValue;
-////       // log("=========================================================================");
-////       // print("KEY: $key");
-////       // print("🔍 READING FROM \"TEMPORARY\" MEMORY");
-////       // T tempValue = storage.read<T>(_memoryPrefix + key);
-//
-////       // if (!tempValue == null) {
-////       //   finalValue = tempValue;
-////       //   print("SUCCESS!");
-////       // } else {
-////       //   print("TEMP: $tempValue");
-//
-////       // log("=========================================================================");
-////       // print("KEY: $key");
-////       // print("🔍 READING FROM \"PERMANENT\" CACHE");
-//
-////       T permValue = storage.read<T>(key);
-////       finalValue = permValue;
-//
-////       // if (permValue == null)
-////       //   print("PERM: $permValue");
-////       // else
-////       // print("SUCCESS!");
-////       // }
-//
-////       return finalValue;
-////     } catch (e) {
-////       print(e.toString());
-////       return null;
-////     }
-////   }
-//
-////   Future<void> write(String key, dynamic data) async {
-////     try {
-////       // log("=========================================================================");
-////       // print("KEY: $key");
-////       // print("✍ WRITING TO \"TEMPORARY\" MEMORY");
-//
-////       // storage.writeInMemory(_memoryPrefix + key, data);
-////       // print("SUCCESS!");
-//
-////       // log("=========================================================================");
-////       // print("KEY: $key");
-////       // print("✍ WRITING TO \"PERMANENT\" CACHE");
-//
-////       await storage.write(key, data).catchError((e) => print("ERROR! : " + e));
-////       // print("SUCCESS!");
-////     } catch (e) {
-////       print(e.toString());
-////     }
-////   }
-//

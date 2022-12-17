@@ -6,16 +6,20 @@ import '../../../../core/controllers/courses/courses_search_controller.dart';
 import '../../../../core/helpers/routes/routes.dart';
 import '../../../../core/helpers/utils/go.dart';
 import '../../../../core/models/course_models/course/course.dart';
+import '../../../../core/models/course_models/course/course_category.dart';
 import '../../../theme/palette.dart';
 import '../../../widgets/course/course_item.dart';
 import '../../../widgets/course/course_item_compact.dart';
 import '../../../widgets/course/courses_settings_widget.dart';
-import '../../../widgets/hello_user_widget.dart';
+import '../../../widgets/shimmers/categories_list_shimmer.dart';
 import '../../../widgets/shimmers/course_item_compact_shimmer.dart';
 import '../../../widgets/shimmers/course_item_shimmer.dart';
+import '../../../widgets/user_widget.dart';
 
 class CoursesHomeTabView extends StatelessWidget {
-  const CoursesHomeTabView({super.key});
+  final List<Color> colors;
+  const CoursesHomeTabView(this.colors, {super.key});
+
   final List<CoursesSettingsWidget> coursesSettingsList = const [
     CoursesSettingsWidget(
       title: "98%",
@@ -42,13 +46,13 @@ class CoursesHomeTabView extends StatelessWidget {
     return Column(
       children: [
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: Palette.coursesHomeTabColors,
+              colors: colors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomRight: Radius.circular(30.0),
             ),
           ),
@@ -64,7 +68,7 @@ class CoursesHomeTabView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(child: HelloUserWidget()),
+                  const Expanded(child: UserWidget()),
                   Align(
                     widthFactor: 0.5,
                     child: ClipOval(
@@ -98,7 +102,7 @@ class CoursesHomeTabView extends StatelessWidget {
                           context.read<CoursesSearchController>();
 
                       return TextField(
-                        controller: searchController.searchTextCtrl,
+                        controller: searchController.textFieldController,
                         // textAlign: TextAlign.right,
                         textDirection: TextDirection.rtl,
                         style: const TextStyle(
@@ -108,6 +112,7 @@ class CoursesHomeTabView extends StatelessWidget {
                         onEditingComplete: () =>
                             search(context, searchController),
                         textInputAction: TextInputAction.search,
+                        clipBehavior: Clip.antiAlias,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                               borderSide: BorderSide.none,
@@ -116,7 +121,7 @@ class CoursesHomeTabView extends StatelessWidget {
                           fillColor: Palette.WHITE,
                           contentPadding:
                               const EdgeInsets.symmetric(horizontal: 24.0),
-                          hintText: "ابحث هنا عن مواضيع تهمك ...",
+                          hintText: "ابحث هنا عن دورات تهمك ...",
                           hintStyle: const TextStyle(
                             color: Color(0xFFACAFB9),
                           ),
@@ -153,15 +158,18 @@ class CoursesHomeTabView extends StatelessWidget {
             builder: (context, courses, child) {
               if (courses != null) {
                 return courses.isNotEmpty
-                    ? ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 22.0,
-                        ),
+                    ? ListView.separated(
+                        padding: const EdgeInsets.all(16.0),
+                        physics: const BouncingScrollPhysics(),
                         scrollDirection: Axis.horizontal,
                         itemCount: courses.length,
                         itemBuilder: (context, i) {
                           return CourseItem(courses[i]);
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(
+                            width: 8.0,
+                          );
                         },
                       )
                     : const Padding(
@@ -174,78 +182,141 @@ class CoursesHomeTabView extends StatelessWidget {
                         ),
                       );
               } else {
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 22.0),
+                return ListView.separated(
+                  padding: const EdgeInsets.all(16.0),
                   itemCount: 3,
                   scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (c, i) {
                     return const CourseItemShimmer();
+                  },
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(
+                      width: 8.0,
+                    );
                   },
                 );
               }
             },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
-                "خصائص الدورات",
-                style:
-                    TextStyle(color: Palette.DARKER_TEXT_COLOR, fontSize: 18.0),
-              ),
-              Icon(
-                Icons.tune,
-                size: 16.0,
-              ),
-            ],
-          ),
-        ),
-        SingleChildScrollView(
-          padding: const EdgeInsets.all(8.0),
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: coursesSettingsList,
-          ),
-        ),
         const Padding(
-          padding: EdgeInsets.only(right: 16.0, top: 16.0, bottom: 8.0),
+          padding: EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
           child: Align(
             alignment: Alignment.centerRight,
             child: Text(
-              "دورات قد تهمك",
+              "خصائص الدورات",
               style:
                   TextStyle(color: Palette.DARKER_TEXT_COLOR, fontSize: 18.0),
             ),
           ),
         ),
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(8.0),
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: coursesSettingsList,
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "جميع الدورات",
+              style:
+                  TextStyle(color: Palette.DARKER_TEXT_COLOR, fontSize: 18.0),
+            ),
+          ),
+        ),
+        Selector<CoursesController, CourseCategory?>(
+            selector: (p0, p1) => p1.selectedCategory,
+            builder: (context, selectedCategory, _) {
+              return Selector<CoursesController, List<CourseCategory>?>(
+                selector: (p0, p1) => p1.categories,
+                builder: (context, categories, child) {
+                  if (categories != null) {
+                    if (categories.isNotEmpty) {
+                      const height = 42.0;
+                      return SizedBox(
+                        height: height,
+                        child: ListView.separated(
+                          itemCount: categories.length,
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          physics: const BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            var category = categories[index];
+                            var bgColor = selectedCategory == category
+                                ? Palette.PURPLE
+                                : Palette.GRAY.withOpacity(0.1);
+                            var textColor = selectedCategory == category
+                                ? Colors.white
+                                : null;
+
+                            return OutlinedButton(
+                              onPressed: () {
+                                var controller =
+                                    context.read<CoursesController>();
+                                controller.setSelectedCategory(category);
+                              },
+                              clipBehavior: Clip.antiAlias,
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(80.0, height),
+                                backgroundColor: bgColor,
+                                foregroundColor: textColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              child: Text(category.title ?? ""),
+                            );
+                          },
+                          separatorBuilder: (context, index) {
+                            return const SizedBox(
+                              width: 8.0,
+                            );
+                          },
+                        ),
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  } else {
+                    return const CategoriesListShimmer();
+                  }
+                },
+              );
+            }),
+        const SizedBox(
+          height: 8.0,
+        ),
         Selector<CoursesController, List<Course>?>(
-          selector: (p0, p1) => p1.allCourses,
+          selector: (p0, p1) => p1.coursesByCategory,
           builder: (context, courses, child) {
             if (courses != null) {
-              courses.sort((a, b) => (b.rate ?? 0).compareTo(a.rate ?? 0));
-              return courses.isNotEmpty
-                  ? ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      itemCount: courses.length,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return CourseItemCompact(courses[index]);
-                      },
-                    )
-                  : const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(
-                        child: Text(
-                          "لا يوجد دورات متاحة.",
-                          style: TextStyle(color: Palette.GRAY),
-                        ),
-                      ),
-                    );
+              if (courses.isNotEmpty) {
+                return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemCount: courses.length,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return CourseItemCompact(courses[index]);
+                  },
+                );
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(
+                    child: Text(
+                      "لا يوجد دورات متاحة.",
+                      style: TextStyle(color: Palette.GRAY),
+                    ),
+                  ),
+                );
+              }
             } else {
               return ListView.builder(
                 shrinkWrap: true,
@@ -264,10 +335,14 @@ class CoursesHomeTabView extends StatelessWidget {
 
   Future<void> search(
       BuildContext context, CoursesSearchController controller) async {
-    if (controller.searchCtrlText.trim().isNotEmpty) {
+    if (controller.searchText.trim().isNotEmpty) {
       controller.updateSearch();
       FocusScope.of(context).unfocus();
-      await Navigator.pushNamed(context, Routes.SEARCH_COURSES, arguments: controller);
+      Navigator.pushNamed(
+        context,
+        Routes.SEARCH_COURSES,
+        arguments: controller,
+      );
     }
   }
 }

@@ -14,6 +14,7 @@ class CertificateItemShimmer extends StatelessWidget {
     var size = context.mediaQuery.size;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(2.0),
       ),
@@ -28,7 +29,7 @@ class CertificateItemShimmer extends StatelessWidget {
               height: 45.0,
             ),
             const SizedBox(
-              height: 16.0,
+              width: 16.0,
             ),
             Expanded(
               child: Column(

@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/controllers/courses/enrollment/classroom_controller.dart';
 import '../../../../core/controllers/courses/enrollment/exam_controller.dart';
-import '../../../../core/controllers/courses/enrollment/materials_controller.dart';
 import '../../../../core/helpers/extensions.dart';
 import '../../../../core/helpers/routes/routes.dart';
 import '../../../../core/models/course_models/lesson/lesson.dart';
 import '../../../../core/models/course_models/material/lesson_material.dart';
-import '../../../../core/services/api_provider.dart';
 import '../../../theme/palette.dart';
-import '../../../widgets/bottom_nav_bar/materials_navigation_bar.dart';
+import '../../../widgets/navbars/classroom_navbar.dart';
 import '../../../widgets/dialogs/general_dialog.dart';
-import 'lesson_exam_view.dart';
 import '../../../widgets/enrollment/material_item.dart';
 import '../../../widgets/shimmers/material_item_shimmer.dart';
+import 'exam_view.dart';
 
-class EnrollmentMaterialsScreen extends StatelessWidget {
+class ClassroomScreen extends StatelessWidget {
   final Lesson lesson;
 
-  const EnrollmentMaterialsScreen({
+  const ClassroomScreen({
     super.key,
     required this.lesson,
   });
@@ -29,7 +28,7 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            create: (context) => MaterialsController(lesson),
+            create: (context) => ClassroomController(context, lesson),
           ),
           ChangeNotifierProvider(
             create: (context) => ExamController(lesson),
@@ -37,7 +36,7 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
           ),
         ],
         builder: (context, _) {
-          final controller = context.watch<MaterialsController>();
+          final controller = context.watch<ClassroomController>();
           final examController = context.watch<ExamController>();
 
           return WillPopScope(
@@ -45,112 +44,90 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
               if (examController.examStatus != ExamStatus.None) {
                 return await goBackDialog(context) ?? false;
               } else {
-                return Future.value(true);
+                if (controller.currentIndex == 0) return true;
+                controller.previousPage(examController.examStatus);
               }
+
+              return false;
             },
             child: Scaffold(
               backgroundColor: Palette.BACKGROUND,
-              body: SizedBox(
-                  height: size.height,
-                  child: Stack(
+              body: Stack(
+                children: [
+                  topPanel(context, examController),
+                  Column(
                     children: [
-                      topPanel(context, examController),
-                      Column(
-                        children: [
-                          const SizedBox(
-                            height: 120.0,
-                          ),
-                          Expanded(
-                            child: Stack(
-                              fit: StackFit.loose,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 22.0),
-                                  child: contentView(
-                                      context, controller, examController),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 22.0),
-                                  child: materialChip(controller),
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 16.0,
-                          ),
-                          Builder(
-                            builder: (context) {
-                              var status = examController.examStatus;
-
-                              if (status == ExamStatus.None) {
-                                return MaterialsNavBar(
-                                  controller: controller,
-                                  examController: examController,
-                                );
-                              } else {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32.0,
-                                    vertical: 16.0,
-                                  ),
-                                  child: Directionality(
-                                    textDirection: TextDirection.ltr,
-                                    child: ElevatedButton.icon(
-                                      onPressed: status == ExamStatus.Complete
-                                          ? () => endExam(context)
-                                          : null,
-                                      style: ElevatedButton.styleFrom(
-                                          minimumSize:
-                                              const Size(double.infinity, 56.0),
-                                          backgroundColor: Palette.BLUE1),
-                                      label: const Text(
-                                        "إنهاء الاختبار",
-                                        textDirection: TextDirection.rtl,
-                                      ),
-                                      icon: const Icon(
-                                        Icons.arrow_back_rounded,
-                                        textDirection: TextDirection.ltr,
-                                        // color: Palette.WHITE,
-                                        size: 32,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                          )
-                        ],
+                      const SizedBox(
+                        height: 120.0,
                       ),
+                      Expanded(
+                        child: Stack(
+                          fit: StackFit.loose,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 22.0),
+                              child: contentView(
+                                  context, controller, examController),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 22.0),
+                              child: materialChip(controller),
+                            )
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 16.0,
+                      ),
+                      Builder(
+                        builder: (context) {
+                          var status = examController.examStatus;
+
+                          if (status == ExamStatus.None) {
+                            return ClassroomNavBar(
+                              controller: controller,
+                              examController: examController,
+                            );
+                          } else {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32.0,
+                                vertical: 16.0,
+                              ),
+                              child: Directionality(
+                                textDirection: TextDirection.ltr,
+                                child: ElevatedButton.icon(
+                                  onPressed: status == ExamStatus.Complete
+                                      ? () => endExam(context)
+                                      : null,
+                                  style: ElevatedButton.styleFrom(
+                                      minimumSize:
+                                          const Size(double.infinity, 56.0),
+                                      backgroundColor: Palette.BLUE1),
+                                  label: const Text(
+                                    "إنهاء الاختبار",
+                                    textDirection: TextDirection.rtl,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.arrow_back_rounded,
+                                    textDirection: TextDirection.ltr,
+                                    // color: Palette.WHITE,
+                                    size: 32,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      )
                     ],
-                  )),
+                  ),
+                ],
+              ),
             ),
           );
         });
-  }
-
-  //////////////////////////////////////////////
-
-  Widget materialChip(MaterialsController controller) {
-    return Align(
-      alignment: Alignment.topLeft,
-      child: Container(
-        height: 26.0,
-        margin: const EdgeInsets.only(left: 22.0),
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFD7E77),
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        child: Text(
-          controller.isExam
-              ? "الاختبار"
-              : "المادة ${(controller.currentIndex + 1).toStringFormatted("00")}",
-          style: const TextStyle(color: Palette.WHITE, fontSize: 14.0),
-        ),
-      ),
-    );
   }
 
   //////////////////////////////////////////////
@@ -222,9 +199,33 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
 
   //////////////////////////////////////////////
 
+  Widget materialChip(ClassroomController controller) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Container(
+        height: 26.0,
+        margin: const EdgeInsets.only(left: 22.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFD7E77),
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        child: Text(
+          controller.isExam
+              ? "الاختبار"
+              : "المادة ${(controller.currentIndex + 1).toStringFormatted("00")}",
+          style: const TextStyle(color: Palette.WHITE, fontSize: 14.0),
+        ),
+      ),
+    );
+  }
+
+  //////////////////////////////////////////////
+
   Widget contentView(
     BuildContext context,
-    MaterialsController controller,
+    ClassroomController controller,
     ExamController examController,
   ) {
     var size = context.mediaQuery.size;
@@ -235,6 +236,7 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
       constraints: BoxConstraints(
         minHeight: size.height / 3,
       ),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
           color: Palette.WHITE,
           borderRadius: BorderRadius.circular(4.0),
@@ -249,7 +251,7 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
       child: Builder(
         builder: (context) {
           if (controller.isExam) {
-            return LessonExamView(
+            return ExamView(
               lesson,
               examController,
             );
@@ -261,8 +263,8 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
     );
   }
 
-  Widget materialView(MaterialsController controller) {
-    return Selector<MaterialsController, LessonMaterial?>(
+  Widget materialView(ClassroomController controller) {
+    return Selector<ClassroomController, LessonMaterial?>(
       selector: (p0, p1) => p1.material,
       builder: (context, material, _) {
         if (material != null) {
@@ -293,7 +295,7 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
         title: "تأكيد",
         content: "هل انت متأكد من الخروج من الاختبار؟",
         confirmText: "الخروج",
-        cancelText: "إلغاء",
+        declineText: "إلغاء",
         confirmColor: Palette.RED,
         onConfirm: () {
           Navigator.pop(context, true);
@@ -307,7 +309,7 @@ class EnrollmentMaterialsScreen extends StatelessWidget {
       Navigator.popAndPushNamed(
         context,
         Routes.ENROLLMENT_RESULT,
-        arguments: result,
+        arguments: [lesson, result],
       );
     });
   }
