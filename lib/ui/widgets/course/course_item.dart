@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/helpers/constants/font_awesome_icons.dart';
@@ -32,11 +31,10 @@ class CourseItem extends StatelessWidget {
           children: [
             Positioned.fill(
               child: CoverImage(
-                      url: course.imageUrl,
-                      fit: BoxFit.cover,
-                      memCacheWidth: size.width.toInt(),
-                    )
-                  ,
+                url: course.imageUrl,
+                fit: BoxFit.cover,
+                memCacheWidth: size.width.toInt(),
+              ),
             ),
             Positioned.fill(
                 child: Container(

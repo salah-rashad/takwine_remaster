@@ -69,4 +69,6 @@ const responseMessageKeysTranslationsMap = <String, String>{
   'phoneNumber': "رقم الهاتف",
   'city': "المدينة",
   'job': "العمل",
+  "oldPassword": "كلمة المرور الحالية",
+  'newPassword': "كلمة المرور الجديدة",
 };

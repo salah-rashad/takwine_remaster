@@ -13,8 +13,7 @@ class AuthDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: false,
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 32.0, vertical: 64.0),
+      insetPadding: const EdgeInsets.all(32.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22.0)),
       clipBehavior: Clip.antiAlias,
       contentPadding: EdgeInsets.zero,
@@ -38,6 +37,22 @@ class AuthDialog extends StatelessWidget {
               child: LoginForm(isDialog: true),
             ),
           ),
+          Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              onPressed: () =>
+                  Navigator.pushNamed(context, Routes.RESET_PASSWORD),
+              style: TextButton.styleFrom(
+                foregroundColor: Palette.DARK_TEXT_COLOR,
+              ),
+              child: const Text(
+                "نسيت كلمة المرور؟",
+                style: TextStyle(
+                  fontSize: 12.0,
+                ),
+              ),
+            ),
+          ),
           Container(
             decoration: const BoxDecoration(
               color: Palette.BLUE1,
@@ -59,11 +74,7 @@ class AuthDialog extends StatelessWidget {
                     radius: 32.0,
                     height: 42.0,
                     width: context.mediaQuery.size.width / 2,
-                    splashColor: Palette.BLACK.withOpacity(0.16),
-                    child: const Text(
-                      "إنشاء حساب جديد",
-                      style: TextStyle(color: Palette.BLACK),
-                    ),
+                    child: const Text("إنشاء حساب جديد"),
                   )
                 ],
               ),

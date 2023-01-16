@@ -14,7 +14,6 @@ import '../../../../core/models/course_models/enrollment/enrollment.dart';
 import '../../../../core/models/course_models/lesson/lesson.dart';
 import '../../../theme/palette.dart';
 import '../../../widgets/category_chip.dart';
-import '../../../widgets/circular_bordered_image.dart';
 import '../../../widgets/cover_image.dart';
 import '../../../widgets/enrollment/enrollment_lesson_item.dart';
 import '../../../widgets/shimmers/course_lesson_item_shimmer.dart';
@@ -144,16 +143,14 @@ class EnrollmentLessonsScreen extends StatelessWidget {
                 ),
                 ClipOval(
                   child: Material(
-                    color: Colors.transparent,
+                    type: MaterialType.transparency,
                     child: IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(
-                        Icons.arrow_back_ios,
-                        textDirection: TextDirection.ltr,
+                        Icons.arrow_back_ios_new_rounded,
                       ),
-                      iconSize: 18.0,
+                      padding: EdgeInsets.zero,
                       color: Palette.WHITE,
-                      padding: const EdgeInsets.all(0.0),
                     ),
                   ),
                 ),

@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -230,58 +229,3 @@ class SingleDocumentScreen extends StatelessWidget {
     }
   }
 }
-
-
-/* return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-                onPressed: () {}, icon: const Icon(Icons.bookmark_add_outlined))
-          ],
-          backgroundColor: const Color(0xFF09031E),
-          bottom: const TabBar(
-            padding: EdgeInsets.zero,
-            indicatorColor: Palette.WHITE,
-            isScrollable: true,
-            tabs: [
-              Tab(
-                text: "الموضوع",
-                icon: Icon(Icons.subject_rounded),
-              ),
-              Tab(
-                text: "المرفقات",
-                icon: Icon(Icons.attachment),
-              ),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            SingleChildScrollView(
-              child: MaterialItem.htmlView(context, document.content),
-            ),
-            ListView.separated(
-              padding: const EdgeInsets.all(16.0),
-              shrinkWrap: true,
-              itemCount: document.files?.length ?? 0,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return FileItem.fromFile(
-                  document.files![index],
-                  padding: EdgeInsets.zero,
-                );
-              },
-              separatorBuilder: (context, index) {
-                return const Divider(
-                  thickness: 1,
-                  height: 8.0,
-                );
-              },
-            )
-          ],
-        ),
-      ),
-    ); */

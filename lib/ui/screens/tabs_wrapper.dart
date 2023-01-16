@@ -89,6 +89,7 @@ class TabsWrapper<T extends TabsController> extends StatelessWidget {
   }
 
   Widget _tabView(BuildContext context, T controller, int index) {
+    var auth = context.watch<AuthController>();
     var size = context.mediaQuery.size;
     var tab = tabs(controller)[index];
 
@@ -98,7 +99,12 @@ class TabsWrapper<T extends TabsController> extends StatelessWidget {
             Theme.of(context).colorScheme.copyWith(primary: tab.colors.first),
       ),
       child: RefreshIndicator(
-        onRefresh: () => _refresh(controller, index),
+        onRefresh: () async {
+          if (auth.isLoggedIn && auth.user == null) {
+            auth.initialize();
+          }
+          return await _refresh(controller, index);
+        },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: safePadding(context),

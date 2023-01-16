@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import '../../core/controllers/auth/auth_controller.dart';
-import '../../core/helpers/extensions.dart';
 
+import '../../core/helpers/extensions.dart';
 import '../../core/helpers/routes/routes.dart';
 import '../widgets/home_banner.dart';
 import '../widgets/smart_layout.dart';
@@ -175,14 +173,9 @@ class _AppRootState extends State<AppRoot> {
                           title: "بنك المعلومات",
                           subtitle: "كل المواد مجانية",
                         ),
-                        ElevatedButton(
-                          onPressed: () =>
-                              context.read<AuthController>().signOut(context),
-                          child: const Text("Sign Out"),
-                        )
                       ],
                     ),
-                    Expanded(child: Container())
+                    const Expanded(child: SizedBox.shrink())
                   ],
                 ),
               )

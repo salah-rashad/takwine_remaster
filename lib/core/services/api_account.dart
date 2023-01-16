@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
 
 import '../helpers/constants/urls.dart';
 import '../models/course_models/course_bookmark.dart';
@@ -24,12 +26,14 @@ class ApiAccount {
 
   static Future<User?> getProfile() async {
     try {
-      String url = ApiUrls.ACCOUNT_PROFILE.url;
+      var url = ApiUrls.ACCOUNT_PROFILE;
 
       // 200: returns logged in user data.
       // 401: unauthorized, with "message": Access denied.
-      var object = await provider.fetch(url, (map) => User.fromMap(map),
-          saveCache: false);
+      var object = await provider.fetch(
+        url,
+        (map) => User.fromMap(map),
+      );
 
       return object;
     } catch (e) {
@@ -37,12 +41,72 @@ class ApiAccount {
     }
   }
 
+  static Future<User?> updateProfile(
+    User user,
+    File? image,
+    bool removeImage,
+  ) async {
+    try {
+      var url = ApiUrls.ACCOUNT_PROFILE;
+
+      MultipartFile? imageData;
+
+      if (image != null) {
+        imageData = await MultipartFile.fromFile(
+          image.path,
+          filename: user.id.toString() + p.extension(image.path),
+        );
+      }
+
+      final response = await provider.PUT(
+        url.url,
+        data: FormData.fromMap({
+          ...user.toMap()
+            ..update("imageUrl", (value) => removeImage ? "" : imageData),
+        }),
+      );
+
+      if (response != null) {
+        if (response.statusCode == HttpStatus.ok) {
+          return User.fromMap(response.data);
+        }
+      }
+    } catch (e) {
+      rethrow;
+    }
+    return null;
+  }
+
+  static Future<bool> changePassword(
+    String? oldPassword,
+    String? newPassword,
+  ) async {
+    try {
+      var url = ApiUrls.ACCOUNT_CHANGE_PASSWORD;
+
+      final response = await provider.PUT(
+        url.url,
+        data: {
+          "oldPassword": oldPassword,
+          "newPassword": newPassword,
+        },
+      );
+
+      if (response?.statusCode == HttpStatus.ok) {
+        return true;
+      }
+    } catch (e) {
+      rethrow;
+    }
+    return false;
+  }
+
   static Future<Enrollment?> updateLastActivity(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_LAST_ACTIVITY.url;
+      const Url url = ApiUrls.ACCOUNT_LAST_ACTIVITY;
 
-      var response = await provider.POST(
-        url,
+      var response = await provider.PUT(
+        url.url,
         data: <String, dynamic>{"course": courseId},
       );
 
@@ -59,7 +123,7 @@ class ApiAccount {
 
   static Future<Enrollment?> getLastActivity() async {
     try {
-      final url = ApiUrls.ACCOUNT_LAST_ACTIVITY.url;
+      const url = ApiUrls.ACCOUNT_LAST_ACTIVITY;
 
       var object = await provider.fetch(
         url,
@@ -78,7 +142,7 @@ class ApiAccount {
 
   static Future<UserStatements?> getUserStatements() async {
     try {
-      final url = ApiUrls.ACCOUNT_USER_STATEMENTS.url;
+      const url = ApiUrls.ACCOUNT_USER_STATEMENTS;
 
       var object =
           await provider.fetch(url, (map) => UserStatements.fromMap(map));
@@ -91,7 +155,7 @@ class ApiAccount {
 
   static Future<List<Enrollment>> getEnrollments() async {
     try {
-      final url = ApiUrls.ACCOUNT_ENROLLMENTS.url;
+      const url = ApiUrls.ACCOUNT_ENROLLMENTS;
 
       var list =
           await provider.fetchList(url, (map) => Enrollment.fromMap(map));
@@ -103,7 +167,7 @@ class ApiAccount {
 
   static Future<Enrollment?> getSingleEnrollment(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_enrollments_single(courseId).url;
+      final Url url = ApiUrls.ACCOUNT_enrollments_single(courseId);
 
       var object = await provider.fetch(
         url,
@@ -119,7 +183,7 @@ class ApiAccount {
 
   static Future<List<Lesson>> getEnrollmentLessons(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_enrollments_lessons(courseId).url;
+      final Url url = ApiUrls.ACCOUNT_enrollments_lessons(courseId);
 
       var list = await provider.fetchList(
         url,
@@ -135,10 +199,10 @@ class ApiAccount {
 
   static Future<Enrollment?> enrollInCourse(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_ENROLLMENTS.url;
+      const Url url = ApiUrls.ACCOUNT_ENROLLMENTS;
 
       var response = await provider.POST(
-        url,
+        url.url,
         data: <String, dynamic>{"course": courseId},
       );
 
@@ -155,7 +219,7 @@ class ApiAccount {
 
   static Future<List<CompleteLesson>> getCompleteLessons(int? id) async {
     try {
-      final String url = ApiUrls.ACCOUNT_enrollments_complete_lessons(id).url;
+      final Url url = ApiUrls.ACCOUNT_enrollments_complete_lessons(id);
 
       var list = await provider.fetchList(
         url,
@@ -175,11 +239,10 @@ class ApiAccount {
     int? lessonId,
   ) async {
     try {
-      final String url =
-          ApiUrls.ACCOUNT_enrollments_complete_lessons(courseId).url;
+      final Url url = ApiUrls.ACCOUNT_enrollments_complete_lessons(courseId);
 
       var response = await provider.POST(
-        url,
+        url.url,
         data: <String, dynamic>{
           "result": result,
           "lesson": lessonId,
@@ -200,7 +263,7 @@ class ApiAccount {
 
   static Future<List<Certificate>> getCertificates() async {
     try {
-      final url = ApiUrls.ACCOUNT_CERTIFICATES.url;
+      const url = ApiUrls.ACCOUNT_CERTIFICATES;
 
       var list =
           await provider.fetchList(url, (map) => Certificate.fromMap(map));
@@ -212,7 +275,7 @@ class ApiAccount {
 
   static Future<List<CourseBookmark>> getCourseBookmarks() async {
     try {
-      final url = ApiUrls.ACCOUNT_COURSE_BOOKMARKS.url;
+      const url = ApiUrls.ACCOUNT_COURSE_BOOKMARKS;
 
       var list =
           await provider.fetchList(url, (map) => CourseBookmark.fromMap(map));
@@ -224,7 +287,7 @@ class ApiAccount {
 
   static Future<CourseBookmark?> getSingleCourseBookmark(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_course_bookmarks_single(courseId).url;
+      final Url url = ApiUrls.ACCOUNT_course_bookmarks_single(courseId);
 
       var object = await provider.fetch(
         url,
@@ -240,10 +303,10 @@ class ApiAccount {
 
   static Future<CourseBookmark?> addCourseBookmark(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_COURSE_BOOKMARKS.url;
+      const Url url = ApiUrls.ACCOUNT_COURSE_BOOKMARKS;
 
       var response = await provider.POST(
-        url,
+        url.url,
         data: <String, dynamic>{
           "course": courseId,
         },
@@ -262,10 +325,10 @@ class ApiAccount {
 
   static Future<bool> removeCourseBookmark(int? courseId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_course_bookmarks_single(courseId).url;
+      final Url url = ApiUrls.ACCOUNT_course_bookmarks_single(courseId);
 
       var response = await provider.DELETE(
-        url,
+        url.url,
         data: <String, dynamic>{
           "course": courseId,
         },
@@ -285,7 +348,7 @@ class ApiAccount {
 
   static Future<List<DocumentBookmark>> getDocumentBookmarks() async {
     try {
-      final url = ApiUrls.ACCOUNT_DOCUMENT_BOOKMARKS.url;
+      const url = ApiUrls.ACCOUNT_DOCUMENT_BOOKMARKS;
 
       var list =
           await provider.fetchList(url, (map) => DocumentBookmark.fromMap(map));
@@ -297,7 +360,7 @@ class ApiAccount {
 
   static Future<DocumentBookmark?> getSingleDocumentBookmark(int? docId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_document_bookmarks_single(docId).url;
+      final Url url = ApiUrls.ACCOUNT_document_bookmarks_single(docId);
 
       var object = await provider.fetch(
         url,
@@ -313,10 +376,10 @@ class ApiAccount {
 
   static Future<DocumentBookmark?> addDocumentBookmark(int? docId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_DOCUMENT_BOOKMARKS.url;
+      const Url url = ApiUrls.ACCOUNT_DOCUMENT_BOOKMARKS;
 
       var response = await provider.POST(
-        url,
+        url.url,
         data: <String, dynamic>{
           "document": docId,
         },
@@ -335,10 +398,10 @@ class ApiAccount {
 
   static Future<bool> removeDocumentBookmark(int? docId) async {
     try {
-      final String url = ApiUrls.ACCOUNT_document_bookmarks_single(docId).url;
+      final Url url = ApiUrls.ACCOUNT_document_bookmarks_single(docId);
 
       var response = await provider.DELETE(
-        url,
+        url.url,
         data: <String, dynamic>{
           "document": docId,
         },

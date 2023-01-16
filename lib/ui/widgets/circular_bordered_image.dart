@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/palette.dart';
@@ -7,45 +8,42 @@ class CircularBorderedImage extends StatelessWidget {
   final String? imageUrl;
   final double size;
   final double spaceBetween;
+  final PlaceholderWidgetBuilder? placeholder;
 
   const CircularBorderedImage({
     Key? key,
     this.imageUrl,
     required this.size,
-    required this.spaceBetween,
+    this.spaceBetween = 2.0,
+    this.placeholder,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: Colors.transparent,
         shape: BoxShape.circle,
         border: Border.all(color: Palette.WHITE, width: 1),
       ),
-      child: Container(
-        margin: EdgeInsets.all(spaceBetween),
-        child: ClipOval(
+      padding: EdgeInsets.all(spaceBetween),
+      child: ClipRRect(
+        clipBehavior: Clip.antiAlias,
+        borderRadius: BorderRadius.circular(size * 2),
+        child: Container(
+          color: Palette.GRAY.withOpacity(0.7),
           child: CoverImage(
             url: imageUrl,
             height: size,
             width: size,
-            memCacheWidth: (size * 1.5).toInt(),
-            memCacheHeight: (size * 1.5).toInt(),
+            memCacheWidth: (size * 3).toInt(),
             fit: BoxFit.cover,
-            placeholder: (context, url) => placeholderImage(),
+            placeholder: placeholder,
           ),
         ),
       ),
-    );
-  }
-
-  Widget placeholderImage() {
-    return Image.asset(
-      "assets/images/user.png",
-      height: size,
-      width: size,
-      fit: BoxFit.cover,
     );
   }
 

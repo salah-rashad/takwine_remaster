@@ -15,7 +15,7 @@ class ApiDocs {
 
   static Future<List<DocumentCategory>> getAllDocumentCategories() async {
     try {
-      final String url = ApiUrls.DOCUMENTS_CATEGORIES.url;
+      const Url url = ApiUrls.DOCUMENTS_CATEGORIES;
 
       var list =
           await provider.fetchList(url, (map) => DocumentCategory.fromMap(map));
@@ -28,7 +28,7 @@ class ApiDocs {
 
   static Future<List<Document>> getDocumentsByCategory(int? catId) async {
     try {
-      final String url = ApiUrls.DOCUMENTS_by_category(catId).url;
+      final Url url = ApiUrls.DOCUMENTS_by_category(catId);
 
       var list = await provider.fetchList(url, (map) => Document.fromMap(map));
 
@@ -40,7 +40,7 @@ class ApiDocs {
 
   static Future<List<TakwineFile>> getFeaturedFiles() async {
     try {
-      final String url = ApiUrls.DOCUMENTS_FEATURED.url;
+      const Url url = ApiUrls.DOCUMENTS_FEATURED;
 
       var list =
           await provider.fetchList(url, (map) => TakwineFile.fromMap(map));
@@ -53,7 +53,7 @@ class ApiDocs {
 
   static Future<List<Document>> searchDocuments(String? value) async {
     try {
-      final String url = ApiUrls.DOCUMENTS_search(value).url;
+      final Url url = ApiUrls.DOCUMENTS_search(value);
 
       var list = await provider.fetchList(url, (map) => Document.fromMap(map));
 

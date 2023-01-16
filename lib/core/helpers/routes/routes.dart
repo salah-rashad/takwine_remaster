@@ -26,4 +26,8 @@ class Routes {
   static const String DOCUMENTS = "/documents";
   static const String SEARCH_DOCUMENTS = "$DOCUMENTS/search";
   static const String SINGLE_DOCUMENT = "$DOCUMENTS/single-document";
+
+  // ACCOUNT
+  static const String PROFILE = "/profile";
+
 }

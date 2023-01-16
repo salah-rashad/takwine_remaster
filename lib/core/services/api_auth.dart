@@ -17,12 +17,12 @@ class ApiAuth {
 
   static Future<Response?> loginUser(String email, String password) async {
     try {
-      final url = ApiUrls.AUTH_LOGIN.url;
+      const url = ApiUrls.AUTH_LOGIN;
 
       /// 200: user logged in successfully, returns a cookie with the token.
       /// 400: error "message".
       final response = await provider.POST(
-        url,
+        url.url,
         data: <String, dynamic>{
           "email": email,
           "password": password,
@@ -35,9 +35,9 @@ class ApiAuth {
     }
   }
 
-  static Future<bool> createUser(User user, String password) async {
+  static Future<bool> createAccount(User user, String password) async {
     try {
-      final url = ApiUrls.AUTH_REGISTER.url;
+      const url = ApiUrls.AUTH_REGISTER;
 
       var data = {
         ...user.toMap(),
@@ -47,7 +47,7 @@ class ApiAuth {
       /// 201: User created successfully, returns user data.
       /// 400: error "message".
       final response = await provider.POST(
-        url,
+        url.url,
         data: data,
       );
 
@@ -62,10 +62,28 @@ class ApiAuth {
 
   static Future<bool> signOut() async {
     try {
-      String url = ApiUrls.AUTH_LOGOUT.url;
+      const url = ApiUrls.AUTH_LOGOUT;
 
       // 200: logged out successfully.
-      var response = await provider.POST(url);
+      var response = await provider.POST(url.url);
+
+      if (response != null) {
+        if (response.statusCode == HttpStatus.ok) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<bool> resetPassword() async {
+    try {
+      const url = ApiUrls.PASSWORD_RESET;
+
+      var response = await provider.POST(url.url);
 
       if (response != null) {
         if (response.statusCode == HttpStatus.ok) {

@@ -142,7 +142,7 @@ class ApiProvider {
     return response;
   }
 
-  Future<T?> fetch<T>(String url, MapConverter<T> convert,
+  Future<T?> fetch<T>(Url url, MapConverter<T> convert,
       {bool saveCache = true}) async {
     var data = await _fetchData<T>(url, convert, saveCache);
     if (data is T) {
@@ -153,7 +153,7 @@ class ApiProvider {
   }
 
   Future<List<T>> fetchList<T>(
-    String url,
+    Url url,
     MapConverter<T> convert, {
     bool saveCache = true,
   }) async {
@@ -171,15 +171,15 @@ class ApiProvider {
   /// try to get cached data from storage.
   /// If cache data is null neither, then return null.
   Future<Object?> _fetchData<T>(
-    String url,
+    Url url,
     MapConverter<T> convert,
     bool saveCache,
   ) async {
     if (!saveCache) {
-      CacheManager.generalStorage.remove(url);
+      url.storage.remove(url.url);
     }
 
-    var response = await GET(url);
+    var response = await GET(url.url);
 
     // represents the raw data like "Map" or "List<Map>"
     dynamic data;
@@ -190,9 +190,9 @@ class ApiProvider {
     if (response != null && response.statusCode == 200) {
       data = response.data;
 
-      if (saveCache) CacheManager.write(url, data);
+      if (saveCache) CacheManager.write(url.url, data, storage: url.storage);
     } else {
-      var cache = CacheManager.read(url);
+      var cache = CacheManager.read(url.url, storage: url.storage);
 
       if (cache != null) {
         data = cache;
@@ -257,11 +257,19 @@ class ApiProvider {
 
   static Widget _item(value) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Text(
-          value.toString(),
-          style: const TextStyle(
-            color: Color(0xFFD53939),
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("• "),
+            Expanded(
+              child: Text(
+                value.toString(),
+                style: const TextStyle(
+                  color: Color(0xFFD53939),
+                ),
+              ),
+            ),
+          ],
         ),
       );
 
@@ -290,10 +298,13 @@ class ApiProvider {
       }
 
       AppSnackbar.custom(
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: messages,
+        content: DefaultTextStyle.merge(
+          style: const TextStyle(fontSize: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: messages,
+          ),
         ),
       );
     }

@@ -16,7 +16,12 @@ class AuthController extends ChangeNotifier with ChangeNotifierHelpers {
     initialize();
   }
 
-  User? user;
+  User? _user;
+  User? get user => _user;
+  set user(User? value) {
+    _user = value;
+    notifyListeners();
+  }
 
   Enrollment? _lastActivity;
   Enrollment? get lastActivity => _lastActivity;
@@ -51,11 +56,16 @@ class AuthController extends ChangeNotifier with ChangeNotifierHelpers {
       }
     }
 
-    var user = await ApiAccount.getProfile();
+    user = await ApiAccount.getProfile();
 
     if (user != null) {
       status = AuthStatus.LOGGED_IN;
       fetchLastActivity();
+    }
+
+    if (!isLoggedIn) {
+      CacheManager.accountStorage.erase();
+      CacheManager.accountStorage.save();
     }
   }
 
@@ -87,6 +97,13 @@ class AuthController extends ChangeNotifier with ChangeNotifierHelpers {
       status = AuthStatus.LOGGED_OUT;
       user = null;
       lastActivity = null;
+
+      CacheManager.authStorage.erase();
+      CacheManager.authStorage.save();
+
+      CacheManager.accountStorage.erase();
+      CacheManager.accountStorage.save();
+
       return true;
     } else {
       return false;

@@ -4,17 +4,20 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
-import 'package:palette_generator/palette_generator.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+
+import '../../../ui/theme/palette.dart';
+
+const String YT_Pattern = "com/watch?v=";
+const String YT_PatternEmbed = "youtube.com/embed/";
 
 Future<void> launchURL(
   String url, {
   LaunchMode mode = LaunchMode.externalApplication,
 }) async {
-  String YT_Pattern = "com/watch?v=";
-  if (url.contains(YT_Pattern)) {
-    String videoId = url.split(YT_Pattern)[1];
-
+  var videoId = YoutubePlayer.convertUrlToId(url);
+  if (videoId != null) {
     var YT_URL = 'https://www.youtube.com/watch?v=$videoId';
     var YT_APP_URL = 'youtube://www.youtube.com/watch?v=$videoId';
 
@@ -44,6 +47,15 @@ Future<void> launchURL(
   }
 }
 
+// String? getYoutubeIdFromUrl(String url) {
+//   if (url.contains(YT_Pattern)) {
+//     return url.split(YT_Pattern)[1];
+//   } else if (url.contains(YT_PatternEmbed)) {
+//     return url.split(YT_PatternEmbed)[1];
+//   }
+//   return null;
+// }
+
 String formatDate(String date) {
   try {
     return intl.DateFormat("d MMM yyyy", "ar_SA").format(DateTime.parse(date));
@@ -53,15 +65,17 @@ String formatDate(String date) {
 }
 
 Color getFontColorForBackground(Color background) {
-  return (background.computeLuminance() > 0.5) ? Colors.black : Colors.white;
+  return (background.computeLuminance() > 0.5)
+      ? Palette.NEARLY_BLACK1
+      : Colors.white;
 }
 
-// Calculate dominant color from ImageProvider
-Future<Color?> getMainColorFromImage(ImageProvider imageProvider) async {
-  final PaletteGenerator paletteGenerator =
-      await PaletteGenerator.fromImageProvider(imageProvider);
-  return paletteGenerator.dominantColor?.color;
-}
+/// Calculate dominant color from ImageProvider
+// Future<Color?> getMainColorFromImage(ImageProvider imageProvider) async {
+//   final PaletteGenerator paletteGenerator =
+//       await PaletteGenerator.fromImageProvider(imageProvider);
+//   return paletteGenerator.dominantColor?.color;
+// }
 
 double calculateReadingTimeFromHtml(String html) {
   const WPM = 233;

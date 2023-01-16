@@ -79,7 +79,6 @@ class MyActivityTabView extends StatelessWidget {
             heightFactor: 0.0,
             child: Card(
               margin: const EdgeInsets.symmetric(horizontal: 16.0),
-              elevation: 10.0,
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
@@ -132,49 +131,54 @@ class MyActivityTabView extends StatelessWidget {
                         Selector<CoursesController, UserStatements?>(
                             selector: (p0, p1) => p1.statements,
                             builder: (context, statement, _) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    (statement?.completed?.toString()) ?? "--",
-                                    style: const TextStyle(
-                                      color: Palette.DARKER_TEXT_COLOR,
-                                      fontSize: 14.0,
-                                      fontFamily: "",
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12.0),
-                                  Text(
-                                    (statement?.inProgress?.toString()) ?? "--",
-                                    style: const TextStyle(
-                                      color: Palette.DARKER_TEXT_COLOR,
-                                      fontSize: 14.0,
-                                      fontFamily: "",
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 14.0),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.star,
-                                        color: Color(0xFFFBB438),
-                                        size: 14,
+                              return Directionality(
+                                textDirection: TextDirection.ltr,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      (statement?.completed?.toString()) ??
+                                          "--",
+                                      style: const TextStyle(
+                                        color: Palette.DARKER_TEXT_COLOR,
+                                        fontSize: 14.0,
+                                        fontFamily: "",
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      const SizedBox(width: 4.0),
-                                      Text(
-                                        statement?.rate ?? "--",
-                                        style: const TextStyle(
-                                          color: Palette.DARKER_TEXT_COLOR,
-                                          fontSize: 14.0,
-                                          fontFamily: "",
-                                          fontWeight: FontWeight.bold,
+                                    ),
+                                    const SizedBox(height: 12.0),
+                                    Text(
+                                      (statement?.inProgress?.toString()) ??
+                                          "--",
+                                      style: const TextStyle(
+                                        color: Palette.DARKER_TEXT_COLOR,
+                                        fontSize: 14.0,
+                                        fontFamily: "",
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 14.0),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          statement?.rate ?? "--",
+                                          style: const TextStyle(
+                                            color: Palette.DARKER_TEXT_COLOR,
+                                            fontSize: 14.0,
+                                            fontFamily: "",
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                        const SizedBox(width: 4.0),
+                                        const Icon(
+                                          Icons.star,
+                                          color: Color(0xFFFBB438),
+                                          size: 14,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               );
                             })
                       ],

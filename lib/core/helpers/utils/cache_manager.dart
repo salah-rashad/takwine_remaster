@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../services/api_provider.dart';
@@ -6,9 +5,11 @@ import '../constants/constants.dart';
 import 'logger.dart';
 
 class CacheManager {
-  static final GetStorage generalStorage = GetStorage();
+  CacheManager._();
+
   static final GetStorage authStorage = GetStorage("auth_storage");
-  // static final GetStorage authAppleStorage = GetStorage(STORAGE_AUTH_APPLE);
+  static final GetStorage generalStorage = GetStorage("general_storage");
+  static final GetStorage accountStorage = GetStorage("account_storage");
 
   // //* TOKEN
   static String? getToken() => authStorage.read<String>(STORAGE_AUTH_TOKEN);
@@ -24,24 +25,37 @@ class CacheManager {
   /* ***************************** */
   /* ***************************** */
 
-  //* READ FROM GENERAL STORAGE
-  static T? read<T>(String key) {
+  /// Reads [key] value from [storage] container.
+  static T? read<T>(String key, {GetStorage? storage}) {
     try {
-      T? value = generalStorage.read<T>(key);
-
+      T? value = (storage ?? generalStorage).read<T>(key);
       return value;
     } catch (e) {
-      if (kDebugMode) {
-        print("ERROR! : $e");
-      }
       rethrow;
     }
   }
 
-  //* READ FROM GENERAL STORAGE
-  static T? readAndConvert<T, C>(String key, MapConverter<C> convert) {
+  /// Writes [data] to [key] in [storage] container.
+  static Future<void> write<T>(
+    String key,
+    T data, {
+    GetStorage? storage,
+  }) async {
     try {
-      var data = generalStorage.read<dynamic>(key);
+      await (storage ?? generalStorage).write(key, data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Reads [key] value from [storage] with a [convert]
+  static T? readAndConvert<T, C>(
+    String key,
+    MapConverter<C> convert, {
+    GetStorage? storage,
+  }) {
+    try {
+      var data = read<dynamic>(key, storage: storage);
 
       if (data != null) {
         if (data is List) {
@@ -66,7 +80,10 @@ class CacheManager {
         }
       }
 
-      Logger.Black.log("$key - ${data.runtimeType}", name: "CacheManager");
+      Logger.Black.log(
+        "$key - ${data.runtimeType}",
+        name: "CacheManager",
+      );
 
       if (data is T) {
         return data;
@@ -74,18 +91,6 @@ class CacheManager {
         return null;
       }
     } catch (e) {
-      rethrow;
-    }
-  }
-
-  //* WRITE TO GENERAL STORAGE
-  static Future<void> write<T>(String key, T data) async {
-    try {
-      await generalStorage.write(key, data);
-    } catch (e) {
-      if (kDebugMode) {
-        print("ERROR! : $e");
-      }
       rethrow;
     }
   }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../core/helpers/constants/urls.dart';
 import '../../core/helpers/utils/helpers.dart';
 import '../screens/image_viewer_screen.dart';
+import '../screens/youtube_video_screen.dart';
 import '../theme/palette.dart';
 
 class CustomHtmlView extends Html {
@@ -37,13 +39,13 @@ class CustomHtmlView extends Html {
           }
         }, */
       "img": (ctx, parsedChild) {
-        var url = ctx.tree.attributes['src'] ?? "";
-        var uniqueTag = "$url-${DateTime.now()}";
+        var src = ctx.tree.attributes['src'] ?? "";
+        var uniqueTag = "$src-${DateTime.now()}";
 
-        bool validURL = Uri.parse(url).isAbsolute;
+        bool validURL = Uri.parse(src).isAbsolute;
 
         if (!validURL) {
-          url = Url.HOST_URI.replace(path: url).toString();
+          src = Url.HOST_URI.replace(path: src).toString();
         }
 
         return ClipRRect(
@@ -54,12 +56,12 @@ class CustomHtmlView extends Html {
                 ctx.buildContext,
                 MaterialPageRoute(
                   builder: (context) =>
-                      ImageViewerScreen(url: url, tag: uniqueTag),
+                      ImageViewerScreen(url: src, tag: uniqueTag),
                 ),
               );
             },
             child: PhotoView(
-              imageProvider: NetworkImage(url),
+              imageProvider: NetworkImage(src),
               tightMode: true,
               disableGestures: true,
               heroAttributes: PhotoViewHeroAttributes(
@@ -95,6 +97,93 @@ class CustomHtmlView extends Html {
             ),
           ),
         );
+      },
+      "iframe": (ctx, parsedChild) {
+        var src = ctx.tree.attributes['src'] ?? "";
+
+        // if this is a youtube video
+        var videoId = YoutubePlayer.convertUrlToId(src);
+        /* if (vidId != null) {
+          var controller = CustomYoutubeController(
+            initialVideoId: vidId,
+            url: src,
+          );
+
+          var getIt = GetIt.instance;
+
+          if (!getIt.isRegistered<CustomYoutubeController>(
+              instanceName: vidId)) {
+            getIt.registerSingleton(controller, instanceName: vidId);
+          }
+
+          controller = getIt.get<CustomYoutubeController>(instanceName: vidId);
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: CustomYoutubePlayer(controller: controller),
+          );
+        } */
+
+        if (videoId != null) {
+          var controller = YoutubePlayerController(initialVideoId: videoId);
+
+          // var getIt = GetIt.instance;
+
+          // if (!getIt.isRegistered<YoutubePlayerController>(
+          //     instanceName: videoId)) {
+          //   getIt.registerSingleton(controller, instanceName: videoId);
+          // }
+
+          // controller =
+          //     getIt.get<YoutubePlayerController>(instanceName: videoId);
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: YoutubePlayer(
+              controller: controller,
+              bottomActions: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.fullscreen,
+                    textDirection: TextDirection.ltr,
+                  ),
+                  onPressed: () async {
+                    // controller.pause();
+
+                    await Navigator.push<YoutubePlayerValue>(
+                      ctx.buildContext,
+                      MaterialPageRoute(
+                        builder: (context) => YoutubeVideoScreen(
+                          videoId: videoId,
+                        ),
+                      ),
+                    );
+
+                    // controller.play();
+                  },
+                  color: Palette.WHITE,
+                  tooltip: "تكبير الشاشة",
+                ),
+                const SizedBox(width: 8.0),
+                CurrentPosition(),
+                const SizedBox(width: 8.0),
+                ProgressBar(
+                  isExpanded: true,
+                  // colors: CustomYoutubePlayer._progressBarColors,
+                ),
+                const SizedBox(width: 16.0),
+                const PlaybackSpeedButton(
+                  icon: Icon(
+                    Icons.speed_rounded,
+                    color: Palette.WHITE,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return parsedChild;
       }
     };
   }

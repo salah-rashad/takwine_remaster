@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+
+import '../../../ui/screens/account/profile_screen.dart';
+import '../../../ui/screens/app_root.dart';
+import '../../../ui/screens/auth/register/register_screen.dart';
+import '../../../ui/screens/auth/reset_password/reset_password_screen.dart';
+import '../../../ui/screens/courses/courses_screen.dart';
 import '../../../ui/screens/courses/courses_search_screen.dart';
 import '../../../ui/screens/courses/enrollment/classroom_screen.dart';
 import '../../../ui/screens/courses/enrollment/enrollment_lessons_screen.dart';
@@ -13,11 +19,8 @@ import '../../models/course_models/course/course.dart';
 import '../../models/course_models/enrollment/enrollment.dart';
 import '../../models/course_models/lesson/lesson.dart';
 import '../../models/document_models/document.dart';
-import 'routes.dart';
 import '../extensions.dart';
-import '../../../ui/screens/app_root.dart';
-import '../../../ui/screens/auth/register/register_screen.dart';
-import '../../../ui/screens/courses/courses_screen.dart';
+import 'routes.dart';
 
 class RouteGenerator {
   static Route<dynamic> onGenerate(RouteSettings settings) {
@@ -28,6 +31,8 @@ class RouteGenerator {
       //~~~~~~~~~~~~~~~~~~~~~~~~ AUTH ~~~~~~~~~~~~~~~~~~~~~~~~//
       case Routes.REGISTER:
         return const RegisterScreen().route(settings);
+      case Routes.RESET_PASSWORD:
+        return const ResetPasswordScreen().route(settings);
 
       //~~~~~~~~~~~~~~~~~~~~~~~~ COURSES ~~~~~~~~~~~~~~~~~~~~~~~~//
       case Routes.COURSES:
@@ -67,6 +72,10 @@ class RouteGenerator {
       case Routes.SINGLE_DOCUMENT:
         var document = settings.arguments as Document;
         return SingleDocumentScreen(document: document).route(settings);
+
+      //~~~~~~~~~~~~~~~~~~~~~~~~ ACCOUNT ~~~~~~~~~~~~~~~~~~~~~~~~//
+      case Routes.PROFILE:
+        return const ProfileScreen().route(settings);
 
       default:
         return MaterialPageRoute(

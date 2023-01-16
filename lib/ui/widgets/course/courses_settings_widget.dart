@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/helpers/extensions.dart';
 import '../../theme/palette.dart';
 
 class CoursesSettingsWidget extends StatelessWidget {
@@ -21,12 +20,10 @@ class CoursesSettingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var size = context.mediaQuery.size;
     return Container(
-      margin: const EdgeInsets.all(8.0),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       height: 80.0,
-      width: size.width / 2.3,
+      width: 150,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -34,21 +31,27 @@ class CoursesSettingsWidget extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22.0),
+        borderRadius: BorderRadius.circular(16.0),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Image.asset(
-              image!,
-              height: 32.0,
-              width: 32.0,
+          Positioned(
+            right: 0.0,
+            bottom: 0.0,
+            child: Align(
+              widthFactor: 0.3,
+              heightFactor: 0.3,
+              child: Opacity(
+                opacity: 0.3,
+                child: Image.asset(
+                  image!,
+                  height: 64.0,
+                  width: 64.0,
+                ),
+              ),
             ),
           ),
-          Expanded(
+          Positioned.fill(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,8 +69,7 @@ class CoursesSettingsWidget extends StatelessWidget {
                   subtitle!,
                   style: const TextStyle(
                     color: Palette.WHITE,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10.0,
+                    fontSize: 14.0,
                   ),
                 ),
               ],

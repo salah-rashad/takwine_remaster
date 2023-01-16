@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../core/controllers/documents/documents_search_controller.dart';
 import '../../theme/palette.dart';
 import '../../widgets/documents/document_item_compact.dart';
-import '../../widgets/shimmers/course_item_compact_shimmer.dart';
+import '../../widgets/fixed_text_form_field.dart';
+import '../../widgets/shimmers/document_item_compact_shimmer.dart';
 
 class DocumentsSearchScreen extends StatelessWidget {
   final DocumentsSearchController controller;
@@ -35,8 +36,7 @@ class DocumentsSearchScreen extends StatelessWidget {
                     bottomRight: Radius.circular(30.0),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 32.0, vertical: 22.0),
+                padding: const EdgeInsets.all(32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -71,7 +71,7 @@ class DocumentsSearchScreen extends StatelessWidget {
                     const SizedBox(height: 16.0),
                     SizedBox(
                       height: 38.0,
-                      child: TextField(
+                      child: FixedTextFormField(
                         controller: controller.textFieldController,
                         // textAlign: TextAlign.right,
                         textDirection: TextDirection.rtl,
@@ -85,7 +85,6 @@ class DocumentsSearchScreen extends StatelessWidget {
                           }
                         },
                         textInputAction: TextInputAction.search,
-                        clipBehavior: Clip.antiAlias,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,
@@ -128,20 +127,10 @@ class DocumentsSearchScreen extends StatelessWidget {
                 child: Builder(
                   builder: (context) {
                     var documents = controller.documents;
-                    if (documents == null) {
-                      return ListView.builder(
-                        // shrinkWrap: true,
-                        itemCount: 3,
-                        padding: EdgeInsets.zero,
-                        itemBuilder: (context, index) {
-                          return const CourseItemCompactShimmer();
-                        },
-                      );
-                    } else {
+                    if (documents != null) {
                       if (documents.isNotEmpty) {
                         return ListView.builder(
-                          padding: EdgeInsets.zero,
-                          // shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
                           itemCount: controller.documents!.length,
                           physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
@@ -153,6 +142,14 @@ class DocumentsSearchScreen extends StatelessWidget {
                           child: Text("لا توجد نتائج للبحث"),
                         );
                       }
+                    } else {
+                      return ListView.builder(
+                        itemCount: 3,
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        itemBuilder: (context, index) {
+                          return const DocumentItemCompactShimmer();
+                        },
+                      );
                     }
                   },
                 ),

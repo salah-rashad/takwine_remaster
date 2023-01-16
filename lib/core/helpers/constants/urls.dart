@@ -1,5 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:get_storage/get_storage.dart';
+
 import '../../services/api_provider.dart';
 import '../utils/cache_manager.dart';
 
@@ -8,14 +10,20 @@ class Url {
   static const String HOST_URL = "http://192.168.1.9:8000";
 
   final String url;
-  const Url(this.url);
+  final bool isPrivate;
+  const Url(this.url) : isPrivate = false;
+  const Url.account(this.url) : isPrivate = true;
 
   T? getCache<T, C>(MapConverter<C> convert) {
     return CacheManager.readAndConvert<T, C>(
       url,
       convert,
+      storage: storage,
     );
   }
+
+  GetStorage get storage =>
+      isPrivate ? CacheManager.accountStorage : CacheManager.generalStorage;
 
   @override
   String toString() => url;
@@ -26,6 +34,8 @@ class ApiUrls {
 
   static const String HOST_URL = Url.HOST_URL;
 
+  static const PASSWORD_RESET = Url("$HOST_URL/api/password_reset/");
+  
   // ~~~~~~~~~~~~~~~~~ AUTH ~~~~~~~~~~~~~~~~~ //
 
   static const _auth = "$HOST_URL/api/auth";
@@ -38,34 +48,39 @@ class ApiUrls {
 
   static const _account = "$HOST_URL/api/account";
 
-  static const ACCOUNT_PROFILE = Url("$_account/profile");
-  static const ACCOUNT_ENROLLMENTS = Url("$_account/enrollments");
+  static const ACCOUNT_PROFILE = Url.account("$_account/profile");
+  static const ACCOUNT_CHANGE_PASSWORD =
+      Url.account("$_account/change-password");
+  static const ACCOUNT_ENROLLMENTS = Url.account("$_account/enrollments");
   static const ACCOUNT_LAST_ACTIVITY =
-      Url("$_account/enrollments/last-activity");
-  static const ACCOUNT_USER_STATEMENTS = Url("$_account/statements");
-  static const ACCOUNT_CERTIFICATES = Url("$_account/certificates");
-  static const ACCOUNT_COURSE_BOOKMARKS = Url("$_account/course-bookmarks");
-  static const ACCOUNT_DOCUMENT_BOOKMARKS = Url("$_account/document-bookmarks");
+      Url.account("$_account/enrollments/last-activity");
+  static const ACCOUNT_USER_STATEMENTS = Url.account("$_account/statements");
+  static const ACCOUNT_CERTIFICATES = Url.account("$_account/certificates");
+  static const ACCOUNT_COURSE_BOOKMARKS =
+      Url.account("$_account/course-bookmarks");
+  static const ACCOUNT_DOCUMENT_BOOKMARKS =
+      Url.account("$_account/document-bookmarks");
 
   /// /account/enrollments/[courseId]
   static Url ACCOUNT_enrollments_single(int? courseId) =>
-      Url("$ACCOUNT_ENROLLMENTS/$courseId");
+      Url.account("$ACCOUNT_ENROLLMENTS/$courseId");
 
   /// /account/enrollments/[courseId]/lessons
   static Url ACCOUNT_enrollments_lessons(int? courseId) =>
-      Url("$ACCOUNT_ENROLLMENTS/$courseId/lessons");
+      Url.account("$ACCOUNT_ENROLLMENTS/$courseId/lessons");
 
   /// /account/enrollments/[courseId]/complete-lessons
   static Url ACCOUNT_enrollments_complete_lessons(int? courseId) =>
-      Url("$ACCOUNT_ENROLLMENTS/$courseId/complete-lessons");
+      Url.account("$ACCOUNT_ENROLLMENTS/$courseId/complete-lessons");
 
   /// /account/course-bookmarks/[courseId]
   static Url ACCOUNT_course_bookmarks_single(int? courseId) =>
-      Url("$ACCOUNT_COURSE_BOOKMARKS/$courseId");
+      Url.account("$ACCOUNT_COURSE_BOOKMARKS/$courseId");
 
   /// /account/document-bookmarks/[docId]
   static Url ACCOUNT_document_bookmarks_single(int? docId) =>
-      Url("$ACCOUNT_DOCUMENT_BOOKMARKS/$docId");
+      Url.account("$ACCOUNT_DOCUMENT_BOOKMARKS/$docId");
+
   // ~~~~~~~~~~~~~~~~~ COURSES ~~~~~~~~~~~~~~~~~ //
 
   static const _courses = "$HOST_URL/api/courses";
@@ -89,7 +104,9 @@ class ApiUrls {
   /// /api/courses/[course]/lessons/[lesson]/materials/[material]
   ///
   /// NOTE: [material] here represents the index of an object
-  /// in the lesson materials list, while materials list is orderable.
+  /// in the lesson materials list, which is orderable.
+  /// For example: if [material] is `0`, you will get the first
+  /// material object in this list.
   static Url COURSES_lesson_material(int? course, int? lesson, int? material) =>
       Url("$_courses/$course/lessons/$lesson/materials/$material");
 
@@ -119,7 +136,6 @@ class ViewUrls {
 
   static String CERTIFICATE(int? id) => "$HOST_URL/certificate/$id";
 }
-
 
 /* enum ApiUrls {
   // ~~~~~~~~~~~~~~~~~ AUTH ~~~~~~~~~~~~~~~~~ //

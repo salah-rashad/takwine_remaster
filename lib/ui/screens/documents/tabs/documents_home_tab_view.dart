@@ -11,6 +11,7 @@ import '../../../../core/models/takwine_file.dart';
 import '../../../theme/palette.dart';
 import '../../../widgets/file_item_view.dart';
 import '../../../widgets/documents/document_item.dart';
+import '../../../widgets/fixed_text_form_field.dart';
 import '../../../widgets/shimmers/categories_list_shimmer.dart';
 import '../../../widgets/shimmers/document_item_shimmer.dart';
 import '../../../widgets/shimmers/file_item_shimmer.dart';
@@ -82,7 +83,7 @@ class DocumentsHomeTabView extends StatelessWidget {
                       final searchController =
                           context.read<DocumentsSearchController>();
 
-                      return TextField(
+                      return FixedTextFormField(
                         controller: searchController.textFieldController,
                         // textAlign: TextAlign.right,
                         textDirection: TextDirection.rtl,
@@ -93,7 +94,6 @@ class DocumentsHomeTabView extends StatelessWidget {
                         onEditingComplete: () =>
                             search(context, searchController),
                         textInputAction: TextInputAction.search,
-                        clipBehavior: Clip.antiAlias,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                               borderSide: BorderSide.none,

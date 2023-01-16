@@ -27,15 +27,17 @@ void main() async {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
     ),
-  );
+  ); 
 
   await CacheManager.authStorage.initStorage;
   await CacheManager.generalStorage.initStorage;
+  await CacheManager.accountStorage.initStorage;
 
   // await intl.initializeDateFormatting("ar");
 
   // await CacheManager.authStorage.erase();
-  // await CacheManager.generalStorage.erase();
+  await CacheManager.generalStorage.erase();
+  // await CacheManager.accountStorage.erase();
 
   runApp(
     MultiProvider(

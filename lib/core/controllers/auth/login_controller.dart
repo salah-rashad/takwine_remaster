@@ -75,14 +75,13 @@ class LoginController extends ChangeNotifier with ChangeNotifierHelpers {
         auth.user = await ApiAccount.getProfile();
         auth.fetchLastActivity();
 
-        result = true;
-
         passwordController.clear();
+
+        result = true;
       }
     }
 
     isLoading = false;
-
     return result;
   }
 }

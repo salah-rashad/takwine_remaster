@@ -11,6 +11,7 @@ import '../../../theme/palette.dart';
 import '../../../widgets/course/course_item.dart';
 import '../../../widgets/course/course_item_compact.dart';
 import '../../../widgets/course/courses_settings_widget.dart';
+import '../../../widgets/fixed_text_form_field.dart';
 import '../../../widgets/shimmers/categories_list_shimmer.dart';
 import '../../../widgets/shimmers/course_item_compact_shimmer.dart';
 import '../../../widgets/shimmers/course_item_shimmer.dart';
@@ -79,7 +80,7 @@ class CoursesHomeTabView extends StatelessWidget {
                           icon: const Icon(
                             Icons.arrow_back_ios_new_rounded,
                           ),
-                          padding: const EdgeInsets.all(0.0),
+                          padding: EdgeInsets.zero,
                           color: Palette.WHITE,
                         ),
                       ),
@@ -101,7 +102,7 @@ class CoursesHomeTabView extends StatelessWidget {
                       final searchController =
                           context.read<CoursesSearchController>();
 
-                      return TextField(
+                      return FixedTextFormField(
                         controller: searchController.textFieldController,
                         // textAlign: TextAlign.right,
                         textDirection: TextDirection.rtl,
@@ -112,7 +113,6 @@ class CoursesHomeTabView extends StatelessWidget {
                         onEditingComplete: () =>
                             search(context, searchController),
                         textInputAction: TextInputAction.search,
-                        clipBehavior: Clip.antiAlias,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                               borderSide: BorderSide.none,
@@ -211,12 +211,21 @@ class CoursesHomeTabView extends StatelessWidget {
             ),
           ),
         ),
-        SingleChildScrollView(
-          padding: const EdgeInsets.all(8.0),
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: coursesSettingsList,
+        SizedBox(
+          height: 90,
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: coursesSettingsList.length,
+            itemBuilder: (context, index) {
+              return coursesSettingsList[index];
+            },
+            separatorBuilder: (context, index) {
+              return const SizedBox(width: 8.0);
+            },
           ),
         ),
         const Padding(

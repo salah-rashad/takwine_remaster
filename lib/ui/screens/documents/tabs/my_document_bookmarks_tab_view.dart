@@ -9,7 +9,7 @@ import '../../../theme/palette.dart';
 import '../../../widgets/dialogs/general_dialog.dart';
 import '../../../widgets/documents/document_item_compact.dart';
 import '../../../widgets/login_required_widget.dart';
-import '../../../widgets/shimmers/certificate_item_shimmer.dart';
+import '../../../widgets/shimmers/document_item_compact_shimmer.dart';
 import '../../../widgets/user_widget.dart';
 
 class MyDocumentBookmarksTabView extends StatelessWidget {
@@ -83,18 +83,18 @@ class MyDocumentBookmarksTabView extends StatelessWidget {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Selector<DocumentsController, List<DocumentBookmark>?>(
-            selector: (p0, p1) => p1.bookmarks,
-            builder: (context, bookmarks, _) {
-              return !auth.isLoggedIn
-                  ? const LoginRequiredWidget()
-                  : Builder(
-                      builder: (context) {
-                        if (bookmarks != null) {
-                          if (bookmarks.isEmpty) {
-                            return const Center(
+        Selector<DocumentsController, List<DocumentBookmark>?>(
+          selector: (p0, p1) => p1.bookmarks,
+          builder: (context, bookmarks, _) {
+            return !auth.isLoggedIn
+                ? const LoginRequiredWidget()
+                : Builder(
+                    builder: (context) {
+                      if (bookmarks != null) {
+                        if (bookmarks.isEmpty) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
                               child: Text(
                                 "ليس لديك مواضيع محفوظة.",
                                 textAlign: TextAlign.center,
@@ -103,34 +103,37 @@ class MyDocumentBookmarksTabView extends StatelessWidget {
                                   fontSize: 14.0,
                                 ),
                               ),
-                            );
-                          } else {
-                            return ListView.builder(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              itemCount: bookmarks.length,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                var bookmark = bookmarks[index];
-                                return GestureDetector(
-                                  onLongPress: () =>
-                                      removeBookmarkDialog(context, bookmark),
-                                  child:
-                                      DocumentItemCompact(bookmark.document!),
-                                );
-                              },
-                            );
-                          }
+                            ),
+                          );
                         } else {
-                          return Column(
-                            children:
-                                List.filled(3, const CertificateItemShimmer()),
+                          return ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            shrinkWrap: true,
+                            itemCount: bookmarks.length,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              var bookmark = bookmarks[index];
+                              return GestureDetector(
+                                onLongPress: () =>
+                                    removeBookmarkDialog(context, bookmark),
+                                child: DocumentItemCompact(bookmark.document!),
+                              );
+                            },
                           );
                         }
-                      },
-                    );
-            },
-          ),
+                      } else {
+                        return ListView.builder(
+                          itemCount: 3,
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          itemBuilder: (context, index) {
+                            return const DocumentItemCompactShimmer();
+                          },
+                        );
+                      }
+                    },
+                  );
+          },
         )
       ],
     );

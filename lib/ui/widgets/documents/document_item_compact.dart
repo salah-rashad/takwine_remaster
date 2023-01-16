@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/helpers/constants/font_awesome_icons.dart';
@@ -48,7 +47,7 @@ class DocumentItemCompact extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: CoverImage(
-                        url: document.imageUrl!,
+                        url: document.imageUrl,
                         fit: BoxFit.cover,
                         memCacheWidth: 64 * 3,
                       ),

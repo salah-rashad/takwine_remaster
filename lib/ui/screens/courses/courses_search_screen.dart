@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/controllers/courses/courses_search_controller.dart';
 import '../../theme/palette.dart';
 import '../../widgets/course/course_item_compact.dart';
+import '../../widgets/fixed_text_form_field.dart';
 import '../../widgets/shimmers/course_item_compact_shimmer.dart';
 
 class CoursesSearchScreen extends StatelessWidget {
@@ -72,13 +73,12 @@ class CoursesSearchScreen extends StatelessWidget {
                     const SizedBox(height: 16.0),
                     SizedBox(
                       height: 38.0,
-                      child: TextField(
+                      child: FixedTextFormField(
                         controller: controller.textFieldController,
-                        // textAlign: TextAlign.right,
-                        textDirection: TextDirection.rtl,
+                        // textDirection: TextDirection.rtl,
                         style: const TextStyle(
                           color: Palette.DARK_TEXT_COLOR,
-                          fontSize: 12.0,
+                          fontSize: 14.0,
                         ),
                         onEditingComplete: () {
                           if (controller.searchText.trim().isNotEmpty) {
@@ -86,7 +86,6 @@ class CoursesSearchScreen extends StatelessWidget {
                           }
                         },
                         textInputAction: TextInputAction.search,
-                        clipBehavior: Clip.antiAlias,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,
@@ -100,22 +99,21 @@ class CoursesSearchScreen extends StatelessWidget {
                           hintStyle: const TextStyle(
                             color: Color(0xFFACAFB9),
                           ),
-                          suffixIcon: ClipRRect(
+                          suffixIcon: Material(
+                            type: MaterialType.transparency,
+                            clipBehavior: Clip.antiAlias,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(30.0),
                               bottomLeft: Radius.circular(30.0),
                             ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: IconButton(
-                                onPressed: controller.updateSearch,
-                                icon: const Icon(
-                                  Icons.search_rounded,
-                                  color: Palette.BLACK,
-                                ),
-                                iconSize: 22.0,
-                                tooltip: "بحث",
+                            child: IconButton(
+                              onPressed: controller.updateSearch,
+                              icon: const Icon(
+                                Icons.search_rounded,
+                                color: Palette.BLACK,
                               ),
+                              iconSize: 22.0,
+                              tooltip: "بحث",
                             ),
                           ),
                         ),
@@ -129,20 +127,11 @@ class CoursesSearchScreen extends StatelessWidget {
                 child: Builder(
                   builder: (context) {
                     var courses = controller.courses;
-                    if (courses == null) {
-                      return ListView.builder(
-                        // shrinkWrap: true,
-                        itemCount: 3,
-                        padding: EdgeInsets.zero,
-                        itemBuilder: (context, index) {
-                          return const CourseItemCompactShimmer();
-                        },
-                      );
-                    } else {
+                    if (courses != null) {
                       if (courses.isNotEmpty) {
                         return ListView.builder(
-                          padding: EdgeInsets.zero,
-                          // shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          shrinkWrap: true,
                           itemCount: controller.courses!.length,
                           physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
@@ -154,6 +143,14 @@ class CoursesSearchScreen extends StatelessWidget {
                           child: Text("لا توجد نتائج للبحث"),
                         );
                       }
+                    } else {
+                      return ListView.builder(
+                        itemCount: 3,
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        itemBuilder: (context, index) {
+                          return const CourseItemCompactShimmer();
+                        },
+                      );
                     }
                   },
                 ),

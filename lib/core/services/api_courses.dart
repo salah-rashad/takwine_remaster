@@ -17,7 +17,7 @@ class ApiCourses {
 
   // static Future<List<Course>> getAllCourses() async {
   //   try {
-  //     String url = ApiUrls.COURSES.url;
+  //     String url = ApiUrls.COURSES;
 
   //     var list = await provider.fetchList(url, (map) => Course.fromMap(map));
 
@@ -29,7 +29,7 @@ class ApiCourses {
 
   static Future<List<Course>> getFeaturedCourses() async {
     try {
-      final url = ApiUrls.COURSES_FEATURED.url;
+      const url = ApiUrls.COURSES_FEATURED;
 
       var list = await provider.fetchList(url, (map) => Course.fromMap(map));
 
@@ -41,7 +41,7 @@ class ApiCourses {
 
   static Future<List<Course>> searchCourses(String? value) async {
     try {
-      final String url = ApiUrls.COURSES_search(value).url;
+      final Url url = ApiUrls.COURSES_search(value);
 
       var list = await provider.fetchList(url, (map) => Course.fromMap(map));
 
@@ -53,7 +53,7 @@ class ApiCourses {
 
   static Future<List<CourseCategory>> getAllCourseCategories() async {
     try {
-      final String url = ApiUrls.COURSES_CATEGORIES.url;
+      const Url url = ApiUrls.COURSES_CATEGORIES;
 
       var list =
           await provider.fetchList(url, (map) => CourseCategory.fromMap(map));
@@ -66,7 +66,7 @@ class ApiCourses {
 
   static Future<List<Course>> getCoursesByCategory(int? catId) async {
     try {
-      final String url = ApiUrls.COURSES_by_category(catId).url;
+      final Url url = ApiUrls.COURSES_by_category(catId);
 
       var list = await provider.fetchList(url, (map) => Course.fromMap(map));
 
@@ -78,7 +78,7 @@ class ApiCourses {
 
   static Future<Course?> getSingleCourse(int id) async {
     try {
-      final String url = ApiUrls.COURSES_single(id).url;
+      final Url url = ApiUrls.COURSES_single(id);
 
       var object = await provider.fetch(url, (map) => Course.fromMap(map));
 
@@ -90,7 +90,7 @@ class ApiCourses {
 
   static Future<List<Lesson>> getLessons(int? id) async {
     try {
-      final String url = ApiUrls.COURSES_lessons(id).url;
+      final Url url = ApiUrls.COURSES_lessons(id);
 
       var list = await provider.fetchList(url, (map) => Lesson.fromMap(map));
 
@@ -102,7 +102,7 @@ class ApiCourses {
 
   static Future<Exam?> getLessonExam(int? courseId, int? lessonId) async {
     try {
-      final String url = ApiUrls.COURSES_lesson_exam(courseId, lessonId).url;
+      final Url url = ApiUrls.COURSES_lesson_exam(courseId, lessonId);
 
       var object = await provider.fetch(
         url,
@@ -119,8 +119,7 @@ class ApiCourses {
   static Future<LessonMaterial?> getLessonMaterial(
       int? course, int? lesson, int? material) async {
     try {
-      final String url =
-          ApiUrls.COURSES_lesson_material(course, lesson, material).url;
+      final Url url = ApiUrls.COURSES_lesson_material(course, lesson, material);
 
       var object =
           await provider.fetch(url, (map) => LessonMaterial.fromMap(map));

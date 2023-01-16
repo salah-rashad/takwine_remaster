@@ -24,7 +24,7 @@ class ClassroomScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var size = context.mediaQuery.size;
+    // var size = context.mediaQuery.size;
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(
