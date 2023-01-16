@@ -1,16 +1,4 @@
-# takwine_remaster
+# Takwine Platform
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- An online educational platform belonging to a famous Moroccan charity, this association is funded by the United States Agency for International Development (USAID).
+- It is an educational application that follows the method of the written articles in its courses, which can contain pictures and videos. It has exams at the end of each lesson. It also has a section for files and documents, and these files can be downloaded and saved permanently on your device. The application partially supports offline mode.
