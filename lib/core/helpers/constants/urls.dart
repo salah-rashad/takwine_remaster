@@ -6,8 +6,8 @@ import '../../services/api_provider.dart';
 import '../utils/cache_manager.dart';
 
 class Url {
-  static Uri HOST_URI = Uri(scheme: "http", host: "192.168.1.9", port: 8000);
-  static const String HOST_URL = "http://192.168.1.9:8000";
+  static Uri HOST_URI = Uri(scheme: "http", host: "192.168.1.10", port: 8000);
+  static const String HOST_URL = "http://192.168.1.10:8000";
 
   final String url;
   final bool isPrivate;
@@ -35,7 +35,7 @@ class ApiUrls {
   static const String HOST_URL = Url.HOST_URL;
 
   static const PASSWORD_RESET = Url("$HOST_URL/api/password_reset/");
-  
+
   // ~~~~~~~~~~~~~~~~~ AUTH ~~~~~~~~~~~~~~~~~ //
 
   static const _auth = "$HOST_URL/api/auth";

@@ -332,6 +332,7 @@ class ProfileScreen extends StatelessWidget {
             style: const TextStyle(fontFamily: ""),
             onEditingComplete: FocusScope.of(context).nextFocus,
             autofillHints: const [AutofillHints.email],
+            enabled: false,
             decoration: _bottomPanelInputDecoration.copyWith(
               labelText: "البريد الإلكتروني",
               labelStyle: const TextStyle(fontFamily: "GE SS Two"),
